@@ -46,4 +46,17 @@ public class Tile extends StackPane {
         // Append it to the StackPane
         getChildren().addAll(rectangle, text);
     }
+
+    public void increaseValue() {
+        this.value *= 2;
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return "" + this.value;
+    }
 }
