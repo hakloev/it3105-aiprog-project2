@@ -48,10 +48,15 @@ public class Main extends Application {
                     log.info("Use AI to do one move");
                     Direction directionToMove = solver.getNextMove();
                     controller.doMove(directionToMove);
+                    controller.redraw();
                     break;
                 default:
                     try {
+                        if (!controller.canMove) {
+                            return;
+                        }
                         controller.doMove(Direction.directionFor(keyEvent.getCode()));
+                        controller.redraw();
                     } catch (IllegalArgumentException e) {
                         log.debug("The user entered an invalid key code for direction: " + keyEvent.getCode());
                     }

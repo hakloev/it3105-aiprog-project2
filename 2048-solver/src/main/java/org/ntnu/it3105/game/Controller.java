@@ -21,9 +21,11 @@ public class Controller {
     public static int TARGET_VALUE = 2048;
 
     private @FXML GridPane grid;
-    private @FXML Label scoreLabel;
-    private @FXML Label bestLabel;
+    private @FXML Label scoreLabel; // Current score
+    private @FXML Label bestLabel; // Best score over time
 
+    public boolean hasWon;
+    public boolean canMove;
     private int currentScore;
     private int[][] tiles = new int[BOARD_SIZE][BOARD_SIZE];
 
@@ -32,9 +34,7 @@ public class Controller {
      */
     public void initialize() {
         log.info("GameController initializing");
-
         scoreLabel.setText(String.valueOf(currentScore));
-
         initializeNewGame();
     }
 
@@ -51,6 +51,9 @@ public class Controller {
 
         currentScore = 0;
         scoreLabel.setText(String.valueOf(currentScore));
+
+        hasWon = false;
+        canMove = true;
 
         addTile();
         addTile();
@@ -81,16 +84,18 @@ public class Controller {
     private void addTile() {
         List<Point> allFreeCells = getAllFreeCells();
         if (allFreeCells.size() == 0) {
-            log.info("Game Over, not possible to add any more tiles to the board");
-            log.debug("No free cells, not possible to add any tiles to the board");
+            if (!isPossibleToMove()) {
+                log.info("GAME OVER; not possible to add any more tiles to the board");
+                canMove = false;
+                return;
+            }
+            log.info("Possible to merge cells, but full board");
             return;
         }
 
         int cellToPopulate = (int)(Math.random() * allFreeCells.size());
         Point cord = allFreeCells.get(cellToPopulate);
-
         log.debug("Adding tile to: (" + cord.x + ", " + cord.y + ") col/row");
-
         tiles[cord.y][cord.x] = Math.random() < 0.9 ? 2 : 4;
     }
 
@@ -153,6 +158,7 @@ public class Controller {
                     points += tiles[row][previousPosition];
 
                     if (tiles[row][previousPosition] == TARGET_VALUE) {
+                        hasWon = true;
                         log.info("REACHED GOAL AND WON THE GAME");
                     }
 
@@ -184,7 +190,6 @@ public class Controller {
         }
 
         addTile();
-        redraw();
     }
 
     /**
@@ -215,6 +220,28 @@ public class Controller {
         }
 
         tiles = rotatedBoard;
+    }
+
+    public boolean isPossibleToMove() {
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
+                int value = tiles[row][col];
+                if ((row < 3 && value == tiles[row + 1][col]) || ((col < 3) && value == tiles[row][col + 1])) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public int[][] getCopyOfBoard() {
+        int[][] copy = new int[BOARD_SIZE][BOARD_SIZE];
+
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            copy[i] = tiles[i].clone();
+        }
+
+        return copy;
     }
 
     /**
