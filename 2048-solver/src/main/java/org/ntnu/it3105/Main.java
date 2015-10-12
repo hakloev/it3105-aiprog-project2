@@ -7,13 +7,11 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-
+import org.ntnu.it3105.ai.Expectimax;
+import org.ntnu.it3105.game.Controller;
+import org.ntnu.it3105.game.Direction;
 import java.io.IOException;
 
-/**
- *
- *
- */
 public class Main extends Application {
 
     private static final Logger log = Logger.getLogger(Main.class);
@@ -23,34 +21,59 @@ public class Main extends Application {
     private AnchorPane root;
     private Controller controller;
 
+    private Expectimax solver;
+
     @Override
     public void start(Stage primaryStage) {
-        BasicConfigurator.configure();
-
         log.info("Starting 2048 JavaFX application");
 
+        BasicConfigurator.configure();
         this.primaryStage = primaryStage;
 
-        loadBoard();
+        loadBoardAndSetScene();
+        configureAndShowPrimaryStage();
 
-        scene.getStylesheets().add("css/stylesheet.css");
-
-        primaryStage.setResizable(false);
-        primaryStage.setTitle("2048-solver");
-        primaryStage.show();
+        // Initiate the Expectimax AI
+        solver = new Expectimax(controller, primaryStage, 3);
 
         // Setting global key listener for the scene
         scene.setOnKeyReleased((keyEvent) -> {
             log.info("User pressed key: " + keyEvent.getCode());
-            try {
-                controller.doMove(Direction.directionFor(keyEvent.getCode()));
-            } catch (IllegalArgumentException e) {
-                log.debug("The user entered an invalid key code for direction: " + keyEvent.getCode());
+
+            switch (keyEvent.getCode()) {
+                case S:
+                    log.info("Use AI to solve the game");
+                    break;
+                case ENTER:
+                    log.info("Use AI to do one move");
+                    Direction directionToMove = solver.getNextMove();
+                    controller.doMove(directionToMove);
+                    break;
+                default:
+                    try {
+                        controller.doMove(Direction.directionFor(keyEvent.getCode()));
+                    } catch (IllegalArgumentException e) {
+                        log.debug("The user entered an invalid key code for direction: " + keyEvent.getCode());
+                    }
+                    break;
             }
+
         });
     }
 
-    private void loadBoard() {
+    /**
+     * Method for configuring the primaryStage
+     */
+    private void configureAndShowPrimaryStage() {
+        primaryStage.setResizable(false);
+        primaryStage.setTitle("2048-solver");
+        primaryStage.show();
+    }
+
+    /**
+     * Method for loading the board-fxml file and populating the scene and primaryStage
+     */
+    private void loadBoardAndSetScene() {
         log.info("Loading Board.fxml onto primaryStage");
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(getClass().getClassLoader().getResource("fxml/Board.fxml"));
@@ -63,6 +86,7 @@ public class Main extends Application {
         }
 
         scene = new Scene(root);
+        scene.getStylesheets().add("css/stylesheet.css");
         this.primaryStage.setScene(scene);
     }
 
@@ -74,6 +98,10 @@ public class Main extends Application {
         return primaryStage;
     }
 
+    /**
+     * Main method
+     * @param args
+     */
     public static void main( String[] args ) {
         launch(args);
     }

@@ -1,4 +1,4 @@
-package org.ntnu.it3105;
+package org.ntnu.it3105.game;
 
 import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.StackPane;
@@ -43,7 +43,7 @@ public class Tile extends StackPane {
         // Create Text
         if (this.value != 0) {
             text = new Text(String.valueOf(this.value));
-            if (this.value == Controller.GOAL_SIZE) {
+            if (this.value == Controller.TARGET_VALUE) {
                 getStyleClass().add("tile-victory");
             }
         } else {

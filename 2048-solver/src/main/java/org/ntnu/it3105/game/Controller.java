@@ -1,4 +1,4 @@
-package org.ntnu.it3105;
+package org.ntnu.it3105.game;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -18,9 +18,8 @@ public class Controller {
     private Logger log = Logger.getLogger(Controller.class);
 
     public static int BOARD_SIZE = 4;
-    public static int GOAL_SIZE = 2048;
+    public static int TARGET_VALUE = 2048;
 
-    //private @FXML AnchorPane root;
     private @FXML GridPane grid;
     private @FXML Label scoreLabel;
     private @FXML Label bestLabel;
@@ -29,7 +28,7 @@ public class Controller {
     private int[][] tiles = new int[BOARD_SIZE][BOARD_SIZE];
 
     /**
-     * Intitalize method called when FXMLLoader loads the Board.fxml
+     * Initialize method called when FXMLLoader loads the Board.fxml
      */
     public void initialize() {
         log.info("GameController initializing");
@@ -55,9 +54,6 @@ public class Controller {
 
         addTile();
         addTile();
-
-        //tiles[0][3] = 512;
-        //tiles[3][1] = 512;
 
         redraw();
     }
@@ -107,16 +103,20 @@ public class Controller {
 
         int points = 0;
 
-        //Rotate the board to make simplify the merging algorithm
-        if (direction == Direction.UP) {
-            rotateCounterClockwise();
-        }
-        else if (direction == Direction.RIGHT) {
-            rotateCounterClockwise();
-            rotateCounterClockwise();
-        }
-        else if (direction == Direction.DOWN) {
-            rotateClockwise();
+        // Rotate the board to make simplify the merging algorithm
+        switch (direction) {
+            case UP:
+                rotateCounterClockwise();
+                break;
+            case RIGHT:
+                rotateCounterClockwise();
+                rotateCounterClockwise();
+                break;
+            case DOWN:
+                rotateClockwise();
+                break;
+            default:
+                break;
         }
 
         for (int row = 0; row < BOARD_SIZE; row++) {
@@ -152,7 +152,7 @@ public class Controller {
 
                     points += tiles[row][previousPosition];
 
-                    if (tiles[row][previousPosition] == GOAL_SIZE) {
+                    if (tiles[row][previousPosition] == TARGET_VALUE) {
                         log.info("REACHED GOAL AND WON THE GAME");
                     }
 
@@ -168,22 +168,23 @@ public class Controller {
         currentScore += points;
         scoreLabel.setText(String.valueOf(currentScore));
 
-        //reverse back the board to the original orientation
-        if (direction == Direction.UP) {
-            rotateClockwise();
-        }
-        else if(direction == Direction.RIGHT) {
-            rotateClockwise();
-            rotateClockwise();
-        }
-        else if (direction == Direction.DOWN) {
-            rotateCounterClockwise();
+        switch (direction) {
+            case UP:
+                rotateClockwise();
+                break;
+            case RIGHT:
+                rotateClockwise();
+                rotateClockwise();
+                break;
+            case DOWN:
+                rotateCounterClockwise();
+                break;
+            default:
+                break;
         }
 
         addTile();
-        //printBoard();
         redraw();
-
     }
 
     /**
@@ -216,6 +217,9 @@ public class Controller {
         tiles = rotatedBoard;
     }
 
+    /**
+     * Redraw the entire GridPane with new tiles
+     */
     public void redraw() {
         log.info("Redrawing the GUI after move");
         grid.getChildren().clear();

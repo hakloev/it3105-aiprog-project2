@@ -1,4 +1,4 @@
-package org.ntnu.it3105;
+package org.ntnu.it3105.game;
 
 import javafx.scene.input.KeyCode;
 
