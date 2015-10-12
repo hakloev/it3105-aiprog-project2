@@ -33,6 +33,8 @@ public class Main extends Application {
 
         loadBoard();
 
+        scene.getStylesheets().add("css/stylesheet.css");
+
         primaryStage.setResizable(false);
         primaryStage.setTitle("2048-solver");
         primaryStage.show();
@@ -56,7 +58,6 @@ public class Main extends Application {
         try {
             root = loader.load();
             controller  = loader.getController();
-
         } catch (IOException e) {
             e.printStackTrace();
         }

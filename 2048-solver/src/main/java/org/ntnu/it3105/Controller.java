@@ -18,13 +18,15 @@ public class Controller {
     private Logger log = Logger.getLogger(Controller.class);
 
     public static int BOARD_SIZE = 4;
+    public static int GOAL_SIZE = 2048;
 
     //private @FXML AnchorPane root;
     private @FXML GridPane grid;
     private @FXML Label scoreLabel;
+    private @FXML Label bestLabel;
 
     private int currentScore;
-    private Tile[][] tiles = new Tile[BOARD_SIZE][BOARD_SIZE];
+    private int[][] tiles = new int[BOARD_SIZE][BOARD_SIZE];
 
     /**
      * Intitalize method called when FXMLLoader loads the Board.fxml
@@ -44,8 +46,7 @@ public class Controller {
         log.info("Initializing a new game, clearing board");
         for (int row = 0; row < BOARD_SIZE; row++) {
             for (int col = 0; col < BOARD_SIZE; col++) {
-                grid.getChildren().remove(tiles[row][col]);
-                tiles[row][col] = null;
+                tiles[row][col] = 0;
             }
         }
 
@@ -55,7 +56,10 @@ public class Controller {
         addTile();
         addTile();
 
-        printBoard();
+        tiles[0][3] = 512;
+        tiles[3][1] = 512;
+
+        redraw();
     }
 
     /**
@@ -65,12 +69,11 @@ public class Controller {
         List<Point> freeCells = new ArrayList<>();
         for (int row = 0; row < BOARD_SIZE; row++) {
             for (int col = 0; col < BOARD_SIZE; col++) {
-                if (tiles[row][col] == null) {
+                if (tiles[row][col] == 0) {
                     freeCells.add(new Point(col, row));
                 }
             }
         }
-        // TODO: If list empty, game is lost
         return freeCells;
     }
 
@@ -81,45 +84,19 @@ public class Controller {
      */
     private void addTile() {
         List<Point> allFreeCells = getAllFreeCells();
+        if (allFreeCells.size() == 0) {
+            log.info("Game Over, not possible to add any more tiles to the board");
+            log.debug("No free cells, not possible to add any tiles to the board");
+            return;
+        }
+
         int cellToPopulate = (int)(Math.random() * allFreeCells.size());
         Point cord = allFreeCells.get(cellToPopulate);
 
         log.debug("Adding tile to: (" + cord.x + ", " + cord.y + ") col/row");
 
-        tiles[cord.y][cord.x] = Math.random() < 0.9 ? new Tile(2) : new Tile(4);
-        grid.add(tiles[cord.y][cord.x], cord.x, cord.y); /* The grid coordinates in the GridPane is reversed in the parameters */
+        tiles[cord.y][cord.x] = Math.random() < 0.9 ? 2 : 4;
     }
-
-    /**
-     * Rotates the board on the left
-     */
-    private void rotateLeft() {
-        Tile[][] rotatedBoard = new Tile[BOARD_SIZE][BOARD_SIZE];
-
-        for(int row = 0; row < BOARD_SIZE; row++) {
-            for(int col = 0 ; col < BOARD_SIZE; col++) {
-                rotatedBoard[row][col] = tiles[col][BOARD_SIZE - row - 1];
-            }
-        }
-
-        tiles = rotatedBoard;
-    }
-
-    /**
-     * Rotates the board on the right
-     */
-    private void rotateRight() {
-        Tile[][] rotatedBoard = new Tile[BOARD_SIZE][BOARD_SIZE];
-
-        for(int row = 0; row < BOARD_SIZE; row++) {
-            for(int col = 0; col < BOARD_SIZE; col++) {
-                rotatedBoard[row][col] = tiles[col][row];
-            }
-        }
-        tiles = rotatedBoard;
-    }
-
-
 
     /**
      * Moves all tiles and promotes (to the power of 2) them if possible
@@ -132,53 +109,58 @@ public class Controller {
 
         //Rotate the board to make simplify the merging algorithm
         if (direction == Direction.UP) {
-            rotateRight();
+            rotateCounterClockwise();
         }
         else if (direction == Direction.RIGHT) {
-            rotateLeft();
-            rotateLeft();
+            rotateCounterClockwise();
+            rotateCounterClockwise();
         }
         else if (direction == Direction.DOWN) {
-            rotateRight();
+            rotateClockwise();
         }
 
         for (int row = 0; row < BOARD_SIZE; row++) {
 
             int lastMergePosition = 0;
 
-            for (int j = 1; j < BOARD_SIZE; ++j) {
+            for (int col = 1; col < BOARD_SIZE; col++) {
 
-                if (tiles[row][j] == null) {
-                    continue; //skip moving zeros
+                if (tiles[row][col] == 0) {
+                    log.debug("We do not move empty cells");
+                    continue;
                 }
 
-                int previousPosition = j - 1;
+                int previousPosition = col - 1;
 
-                while (previousPosition > lastMergePosition && tiles[row][previousPosition] == null) { //skip all the zeros
+                while (previousPosition > lastMergePosition && tiles[row][previousPosition] == 0) { // Skip all unpopulated cells (> 0)
                     --previousPosition;
                 }
 
-                if (previousPosition == j) {
-                    //we can't move this at all
-                } else if (tiles[row][previousPosition] == null) {
-                    //move to empty value
-                    log.debug("Move to empty cell");
-                    tiles[row][previousPosition] = tiles[row][j];
-                    tiles[row][j] = null;
-                } else if (tiles[row][previousPosition].getValue() == tiles[row][j].getValue()) {
-                    //merge with matching value
-                    log.debug("Merge with matching value");
-                    tiles[row][j].increaseValue();
-                    tiles[row][previousPosition] = tiles[row][j];
-                    tiles[row][j] = null;
+                if (previousPosition == col) {
+                    log.debug("This cell can not be moved, same cell");
+                } else if (tiles[row][previousPosition] == 0) {
+                    // Moving to an empty cell
+                    log.debug("Moving to an empty cell (" + row + ", " + previousPosition + ")");
+                    tiles[row][previousPosition] = tiles[row][col];
+                    tiles[row][col] = 0;
+                } else if (tiles[row][previousPosition] == tiles[row][col]) {
+                    // Merging two matching cells
+                    tiles[row][previousPosition] = tiles[row][col];
+                    tiles[row][col] = 0;
+                    tiles[row][previousPosition] *= 2;
+                    log.debug("Merging with matching value, new value is: " + tiles[row][previousPosition] + " and position is (" + row + ", " + previousPosition + ")");
 
-                    points += tiles[row][previousPosition].getValue();
+                    points += tiles[row][previousPosition];
+
+                    if (tiles[row][previousPosition] == GOAL_SIZE) {
+                        log.info("REACHED GOAL AND WON THE GAME");
+                    }
+
                     lastMergePosition = previousPosition + 1;
-
-                } else if (tiles[row][previousPosition] != tiles[row][j] && previousPosition + 1 != j) {
-                    log.debug("DERP ");
-                    tiles[row][previousPosition + 1] = tiles[row][j];
-                    tiles[row][j] = null;
+                } else if (tiles[row][previousPosition] != tiles[row][col] && previousPosition + 1 != col) {
+                    log.debug("");
+                    tiles[row][previousPosition + 1] = tiles[row][col];
+                    tiles[row][col] = 0;
                 }
             }
         }
@@ -186,43 +168,73 @@ public class Controller {
         currentScore += points;
         scoreLabel.setText(String.valueOf(currentScore));
 
-
         //reverse back the board to the original orientation
         if (direction == Direction.UP) {
-            rotateRight();
+            rotateClockwise();
         }
         else if(direction == Direction.RIGHT) {
-            rotateLeft();
-            rotateLeft();
+            rotateClockwise();
+            rotateClockwise();
         }
         else if (direction == Direction.DOWN) {
-            rotateLeft();
+            rotateCounterClockwise();
         }
 
         addTile();
-        printBoard();
-
-        // ADD TILE OF NOT FINISHED
-        /*
-        // TODO: MOVE ALL TILES, NOT JUST THIS HARDCODED ONE
-        int from_x = curr_x, from_y = curr_y;
-        int to_x = (from_x + direction.x), to_y = (from_y + direction.y);
-
-        grid.getChildren().remove(tiles[from_x][from_y]);
-        grid.add(tiles[from_x][from_y], to_x, to_y);
-        tiles[to_x][to_y] = tiles[from_x][from_y];
-        tiles[from_x][from_y] = null;
-
-        curr_x = to_x;
-        curr_y = to_y;
-        */
+        //printBoard();
+        redraw();
 
     }
 
+    /**
+     * Rotates the board on the right
+     */
+    private void rotateClockwise() {
+        int[][] rotatedBoard = new int[BOARD_SIZE][BOARD_SIZE];
+
+        for(int i = 0; i < BOARD_SIZE; i++) {
+            for(int j = 0; j < BOARD_SIZE; j++) {
+                rotatedBoard[i][j]=tiles[BOARD_SIZE - j - 1][i];
+            }
+        }
+
+        tiles = rotatedBoard;
+    }
+
+    /**
+     * Rotates the board on the left
+     */
+    private void rotateCounterClockwise() {
+        int[][] rotatedBoard = new int[BOARD_SIZE][BOARD_SIZE];
+
+        for(int i = 0; i < BOARD_SIZE; i++) {
+            for(int j = 0; j < BOARD_SIZE; j++) {
+                rotatedBoard[BOARD_SIZE - j - 1][i] = tiles[i][j];
+            }
+        }
+
+        tiles = rotatedBoard;
+    }
+
+    public void redraw() {
+        log.info("Redrawing the GUI after move");
+        grid.getChildren().clear();
+
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
+                Tile toAdd = new Tile(tiles[row][col]);
+                grid.add(toAdd, col, row);
+            }
+        }
+    }
+
+    /**
+     * Prints the board to the console
+     */
     private void printBoard() {
         for (int row = 0; row < BOARD_SIZE; row++) {
             for (int col = 0; col < BOARD_SIZE; col++) {
-                if (tiles[row][col] == null) {
+                if (tiles[row][col] == 0) {
                     System.out.print("#");
                 } else {
                     System.out.print(tiles[row][col]);

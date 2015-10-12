@@ -1,9 +1,9 @@
 package org.ntnu.it3105;
 
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
 /**
@@ -34,21 +34,25 @@ public class Tile extends StackPane {
         setPrefWidth(TILE_SIZE);
 
         // Create Rectangle
-        rectangle = new Rectangle(TILE_SIZE, TILE_SIZE, Color.CORNSILK);
+        rectangle = new Rectangle(TILE_SIZE, TILE_SIZE, Color.TRANSPARENT);
+        rectangle.setEffect(new DropShadow(10, 5, 5, Color.GRAY));
         rectangle.setArcWidth(5);
         rectangle.setArcHeight(5);
-        //rectangle.setEffect(new DropShadow(10, 5, 5, Color.GRAY));
+        getStyleClass().add("tile-color-" + value);
 
         // Create Text
-        text = new Text(String.valueOf(this.value));
-        text.setFont(new Font("Verdana Bold", 50));
+        if (this.value != 0) {
+            text = new Text(String.valueOf(this.value));
+            if (this.value == Controller.GOAL_SIZE) {
+                getStyleClass().add("tile-victory");
+            }
+        } else {
+            text = new Text(" ");
+        }
+        text.getStyleClass().add("tile-label");
 
         // Append it to the StackPane
-        getChildren().addAll(rectangle, text);
-    }
-
-    public void increaseValue() {
-        this.value *= 2;
+        getChildren().addAll(text); // rectangle
     }
 
     public int getValue() {
@@ -57,6 +61,7 @@ public class Tile extends StackPane {
 
     @Override
     public String toString() {
-        return "" + this.value;
+        return "Tile{" + this.value + "}";
     }
+
 }

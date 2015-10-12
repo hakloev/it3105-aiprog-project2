@@ -1,0 +1,68 @@
+.grid {
+    -fx-background-color: rgb(145, 126, 112);
+    -fx-hgap: 5;
+    -fx-vgap: 5;
+    -fx-horizontal-grid-lines-visible: true;
+    -fx-vertical-grid-lines-visible: true;
+    -fx-grid-lines-visible: true;
+}
+
+.tile-label {
+    -fx-font-family: Arial, Helvetica, sans-serif;
+}
+
+.tile-victory {
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 208, 8, 0.8), 20, 0, 0, 0);
+    -fx-padding: 10;
+    -fx-background-color: firebrick;
+    -fx-border-radius: 5;
+}
+
+.tile-color-0 {
+    -fx-background-color: darkgray;
+}
+
+.tile-color-2 {
+    -fx-background-color: #fef4ea;
+    -fx-font-size: 55;
+}
+.tile-color-4 {
+    -fx-background-color: #ede0c8;
+    -fx-font-size: 55;
+}
+.tile-color-8 {
+    -fx-background-color: #f2b179;
+    -fx-font-size: 55;
+}
+.tile-color-16 {
+    -fx-background-color: #f59563;
+    -fx-font-size: 55;
+}
+.tile-color-32 {
+    -fx-background-color: #f67c5f;
+    -fx-font-size: 55;
+}
+.tile-color-64 {
+    -fx-background-color: #f65e3b;
+    -fx-font-size: 55;
+}
+.tile-color-128 {
+    -fx-background-color: #edcf72;
+    -fx-font-size: 50;
+}
+.tile-color-256 {
+    -fx-background-color: #edcc61;
+    -fx-font-size: 50;
+}
+.tile-color-512 {
+    -fx-background-color: #edc850;
+    -fx-font-size: 50;
+}
+.tile-color-1024 {
+    -fx-background-color: #edc53f;
+    -fx-font-size: 40;
+}
+.tile-color-2048 {
+    -fx-background-color: #edc22e;
+    -fx-font-size: 40;
+}
