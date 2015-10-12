@@ -56,8 +56,8 @@ public class Controller {
         addTile();
         addTile();
 
-        tiles[0][3] = 512;
-        tiles[3][1] = 512;
+        //tiles[0][3] = 512;
+        //tiles[3][1] = 512;
 
         redraw();
     }
