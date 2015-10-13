@@ -43,7 +43,7 @@ public class Tile extends StackPane {
         // Create Text
         if (this.value != 0) {
             text = new Text(String.valueOf(this.value));
-            if (this.value == Controller.TARGET_VALUE) {
+            if (this.value == Board.TARGET_VALUE) {
                 getStyleClass().add("tile-victory");
             }
         } else {
