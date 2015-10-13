@@ -41,9 +41,8 @@ public class Controller {
 
         if (!board.hasWon() && board.canMove()) {
             board.doMove(directionToMove);
+            redraw(board.getBoard());
         }
-
-        redraw(board.getBoard());
     }
 
     /**
@@ -61,6 +60,14 @@ public class Controller {
                 grid.add(toAdd, col, row);
             }
         }
+    }
+
+    /**
+     * Get the board reference
+     * @return The board reference
+     */
+    public Board getBoard() {
+        return board;
     }
 
 }

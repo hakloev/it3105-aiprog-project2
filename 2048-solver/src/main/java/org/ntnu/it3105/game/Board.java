@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -24,27 +25,12 @@ public class Board {
 
 
     /**
-     * Returns a list of all possible positions to add a tile
-     */
-    private List<Point> getAllFreeCells() {
-        List<Point> freeCells = new ArrayList<>();
-        for (int row = 0; row < BOARD_SIZE; row++) {
-            for (int col = 0; col < BOARD_SIZE; col++) {
-                if (tiles[row][col] == 0) {
-                    freeCells.add(new Point(col, row));
-                }
-            }
-        }
-        return freeCells;
-    }
-
-    /**
      * Add a single tile to the board
      * Choose a random position on the board with a new tile
      * The tile should be 2 or 4. Ensure a probability of 0.9 for 2 and 0.1 for 4
      */
     private void addTile() {
-        List<Point> allFreeCells = getAllFreeCells();
+        List<Point> allFreeCells = getAllFreeCells(this.tiles);
         if (allFreeCells.size() == 0) {
             if (!isPossibleToMove()) {
                 log.info("It is not possible to move, setting canMove to false. GAME OVER");
@@ -62,25 +48,32 @@ public class Board {
     }
 
     /**
-     * Moves all tiles and promotes (to the power of 2) them if they are merged
-     * @param direction The direction to move in
+     * Returns a list of all possible positions to add a tile
      */
-    public void doMove(Direction direction) {
-        log.debug("Moving in direction: " + direction);
+    public static List<Point> getAllFreeCells(int[][] board) {
+        List<Point> freeCells = new ArrayList<>();
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
+                if (board[row][col] == 0) {
+                    freeCells.add(new Point(col, row));
+                }
+            }
+        }
+        return freeCells;
+    }
 
-        int points = 0;
-
+    public static int[][] move(int[][] board, Direction direction) {
         // Rotate the board to make simplify the merging algorithm
         switch (direction) {
             case UP:
-                rotateCounterClockwise();
+                board = rotateCounterClockwise(board);
                 break;
             case RIGHT:
-                rotateCounterClockwise();
-                rotateCounterClockwise();
+                board = rotateCounterClockwise(board);
+                board =rotateCounterClockwise(board);
                 break;
             case DOWN:
-                rotateClockwise();
+                board = rotateClockwise(board);
                 break;
             default:
                 break;
@@ -92,95 +85,100 @@ public class Board {
 
             for (int col = 1; col < BOARD_SIZE; col++) {
 
-                if (tiles[row][col] == 0) {
-                    log.debug("We do not move empty cells");
+                if (board[row][col] == 0) {
                     continue;
                 }
 
                 int previousPosition = col - 1;
 
-                while (previousPosition > lastMergePosition && tiles[row][previousPosition] == 0) { // Skip all unpopulated cells (> 0)
+                while (previousPosition > lastMergePosition && board[row][previousPosition] == 0) { // Skip all unpopulated cells (> 0)
                     --previousPosition;
                 }
 
                 if (previousPosition == col) {
-                    log.debug("This cell can not be moved, same cell");
-                } else if (tiles[row][previousPosition] == 0) {
+                    continue;
+                } else if (board[row][previousPosition] == 0) {
                     // Moving to an empty cell
-                    log.debug("Moving to an empty cell (" + row + ", " + previousPosition + ")");
-                    tiles[row][previousPosition] = tiles[row][col];
-                    tiles[row][col] = 0;
-                } else if (tiles[row][previousPosition] == tiles[row][col]) {
+                    board[row][previousPosition] = board[row][col];
+                    board[row][col] = 0;
+                } else if (board[row][previousPosition] == board[row][col]) {
                     // Merging two matching cells
-                    tiles[row][previousPosition] = tiles[row][col];
-                    tiles[row][col] = 0;
-                    tiles[row][previousPosition] *= 2;
-                    log.debug("Merging with matching value, new value is: " + tiles[row][previousPosition] + " and position is (" + row + ", " + previousPosition + ")");
-
-                    points += tiles[row][previousPosition];
-
-                    if (tiles[row][previousPosition] == TARGET_VALUE) {
-                        hasWon = true;
-                        log.info("Reached the target value, setting hasWon to true");
-                    }
+                    board[row][previousPosition] = board[row][col];
+                    board[row][col] = 0;
+                    board[row][previousPosition] *= 2;
 
                     lastMergePosition = previousPosition + 1;
-                } else if (tiles[row][previousPosition] != tiles[row][col] && previousPosition + 1 != col) {
-                    log.debug("");
-                    tiles[row][previousPosition + 1] = tiles[row][col];
-                    tiles[row][col] = 0;
+                } else if (board[row][previousPosition] != board[row][col] && previousPosition + 1 != col) {
+                    board[row][previousPosition + 1] = board[row][col];
+                    board[row][col] = 0;
                 }
             }
         }
-
-        currentScore += points;
-
         switch (direction) {
             case UP:
-                rotateClockwise();
+                board = rotateClockwise(board);
                 break;
             case RIGHT:
-                rotateClockwise();
-                rotateClockwise();
+                board = rotateClockwise(board);
+                board = rotateClockwise(board);
                 break;
             case DOWN:
-                rotateCounterClockwise();
+                board = rotateCounterClockwise(board);
                 break;
             default:
                 break;
         }
 
-        addTile();
+        return board;
+    }
+
+    /**
+     * Moves all tiles and promotes (to the power of 2) them if they are merged
+     * @param direction The direction to move in
+     */
+    public void doMove(Direction direction) {
+        log.debug("Moving in direction: " + direction);
+
+        int[][] movedBoard = move(this.getCopyOfBoard(), direction);
+
+        if (!Arrays.deepEquals(movedBoard, this.tiles)) {
+            log.debug("Board state changed, did move and appending tile");
+            this.tiles = movedBoard;
+            addTile();
+        } else {
+            log.debug("Board state did not change, did not append tile");
+        }
+
     }
 
     /**
      * Rotates the board on the right
      */
-    private void rotateClockwise() {
+    private static int[][] rotateClockwise(int[][] board) {
         int[][] rotatedBoard = new int[BOARD_SIZE][BOARD_SIZE];
 
         for(int i = 0; i < BOARD_SIZE; i++) {
             for(int j = 0; j < BOARD_SIZE; j++) {
-                rotatedBoard[i][j]=tiles[BOARD_SIZE - j - 1][i];
+                rotatedBoard[i][j] = board[BOARD_SIZE - j - 1][i];
             }
         }
 
-        tiles = rotatedBoard;
+        return rotatedBoard;
     }
 
     /**
      * Rotates the board on the left
      */
-    private void rotateCounterClockwise() {
+    private static int[][] rotateCounterClockwise(int[][] board) {
         int[][] rotatedBoard = new int[BOARD_SIZE][BOARD_SIZE];
 
         for(int i = 0; i < BOARD_SIZE; i++) {
             for(int j = 0; j < BOARD_SIZE; j++) {
-                rotatedBoard[BOARD_SIZE - j - 1][i] = tiles[i][j];
+                rotatedBoard[BOARD_SIZE - j - 1][i] = board[i][j];
             }
         }
 
-        tiles = rotatedBoard;
+        return rotatedBoard;
     }
 
     /**
@@ -233,6 +231,20 @@ public class Board {
 
         for (int i = 0; i < BOARD_SIZE; i++) {
             copy[i] = tiles[i].clone();
+        }
+
+        return copy;
+    }
+
+    /**
+     * Returns a copy of the board
+     * @return The copy of the board
+     */
+    public static int[][] getCopyOfBoard(int[][] board) {
+        int[][] copy = new int[BOARD_SIZE][BOARD_SIZE];
+
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            copy[i] = board[i].clone();
         }
 
         return copy;

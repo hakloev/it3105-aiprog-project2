@@ -7,7 +7,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-import org.ntnu.it3105.ai.ExpectiMax;
+import org.ntnu.it3105.ai.Expectimax;
 import org.ntnu.it3105.game.Controller;
 import org.ntnu.it3105.game.Direction;
 import java.io.IOException;
@@ -21,7 +21,7 @@ public class Main extends Application {
     private AnchorPane root;
     private Controller controller;
 
-    private ExpectiMax solver;
+    private Expectimax solver;
 
     @Override
     public void start(Stage primaryStage) {
@@ -34,7 +34,7 @@ public class Main extends Application {
         configureAndShowPrimaryStage();
 
         // Initiate the Expectimax AI
-        solver = new ExpectiMax(controller, primaryStage, 3);
+        solver = new Expectimax(controller, primaryStage, 3);
 
         // Setting global key listener for the scene
         scene.setOnKeyReleased((keyEvent) -> {
@@ -43,11 +43,11 @@ public class Main extends Application {
             switch (keyEvent.getCode()) {
                 case S:
                     log.info("Use AI to solve the game");
+                    //solver.solve();
                     break;
                 case ENTER:
                     log.info("Use AI to do one move");
-                    Direction directionToMove = solver.getNextMove();
-                    controller.doMove(directionToMove);
+                    solver.actuateNextMove();
                     break;
                 default:
                     try {
