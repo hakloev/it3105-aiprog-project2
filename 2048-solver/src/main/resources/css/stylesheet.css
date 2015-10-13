@@ -13,9 +13,6 @@
 
 .tile-victory {
     -fx-effect: dropshadow(three-pass-box, rgba(0, 208, 8, 0.8), 20, 0, 0, 0);
-    -fx-padding: 10;
-    -fx-background-color: firebrick;
-    -fx-border-radius: 5;
 }
 
 .tile-color-0 {
