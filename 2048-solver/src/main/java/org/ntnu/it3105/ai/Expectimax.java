@@ -40,7 +40,7 @@ public class Expectimax {
         double bestValue = 0.0;
 
         for (Direction directionToMove : Direction.values()) {
-            int[][] boardCopy = controller.getBoard().getCopyOfBoard();
+            int[][] boardCopy = controller.getBoard().getCopyOfBoard(); // Get copy of the current state in the actual board.
             int[][] movedBoard = move(boardCopy, directionToMove);
 
             if (Arrays.deepEquals(movedBoard, boardCopy)) {
@@ -78,7 +78,7 @@ public class Expectimax {
             //foreach child of node
             //  α := max(α, expectiminimax(child, depth-1))
             for (Direction directionToMove : Direction.values()) {
-                int[][] boardCopy = controller.getBoard().getCopyOfBoard();
+                int[][] boardCopy = getCopyOfBoard(board); // Get copy of the board sent as argument
                 int[][] movedBoard = move(boardCopy, directionToMove);
 
                 if (Arrays.deepEquals(movedBoard, boardCopy)) {
@@ -131,6 +131,9 @@ public class Expectimax {
         controller.doMove(directionToMove);
     }
 
+    /**
+     * Solve the entire 2048 problem using the expectimax algorithm
+     */
     public void solve() {
         while (!controller.getBoard().hasWon() && controller.getBoard().canMove()) {
             Direction directionToMove = getNextMove();

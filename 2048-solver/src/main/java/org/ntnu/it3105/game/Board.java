@@ -223,7 +223,7 @@ public class Board {
     }
 
     /**
-     * Returns a copy of the board
+     * Returns a copy of the actual board
      * @return The copy of the board
      */
     public int[][] getCopyOfBoard() {
@@ -237,7 +237,8 @@ public class Board {
     }
 
     /**
-     * Returns a copy of the board
+     * Returns a copy of the board sent as parameter
+     * @param board The board to copy
      * @return The copy of the board
      */
     public static int[][] getCopyOfBoard(int[][] board) {
