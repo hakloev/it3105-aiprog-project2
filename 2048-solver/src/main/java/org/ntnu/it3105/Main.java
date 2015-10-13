@@ -34,7 +34,7 @@ public class Main extends Application {
         configureAndShowPrimaryStage();
 
         // Initiate the Expectimax AI
-        solver = new Expectimax(controller, primaryStage, 3);
+        solver = new Expectimax(controller, 3);
 
         // Setting global key listener for the scene
         scene.setOnKeyReleased((keyEvent) -> {
