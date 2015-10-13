@@ -27,7 +27,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) {
         log.info("Starting 2048 JavaFX application");
         PropertyConfigurator.configure(getClass().getClassLoader().getResource("config/log4j.properties"));
-        
+
         this.primaryStage = primaryStage;
 
         loadBoardAndSetScene();
