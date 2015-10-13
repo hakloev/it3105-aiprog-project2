@@ -83,7 +83,6 @@ public class Expectimax {
                 }
 
                 alpha = Math.max(alpha, expectimax(movedBoard, depth - 1, false));
-
             }
             return maxValue;
 
