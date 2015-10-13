@@ -29,77 +29,77 @@
 
 .tile-color-2 {
     -fx-background-color: #fef4ea;
-    -fx-background-image: url('/img/dudes-theme/2.jpg');
+    -fx-background-image: url('../img/dudes-theme/2.jpg');
     -fx-background-position: center center;
     -fx-background-size: contain;
     -fx-font-size: 55;
 }
 .tile-color-4 {
     -fx-background-color: #ede0c8;
-    -fx-background-image: url('/img/dudes-theme/4.jpg');
+    -fx-background-image: url('../img/dudes-theme/4.jpg');
     -fx-background-position: center center;
     -fx-background-size: contain;
     -fx-font-size: 55;
 }
 .tile-color-8 {
     -fx-background-color: #f2b179;
-    -fx-background-image: url('/img/dudes-theme/8.jpg');
+    -fx-background-image: url('../img/dudes-theme/8.jpg');
     -fx-background-position: center center;
     -fx-background-size: contain;
     -fx-font-size: 55;
 }
 .tile-color-16 {
     -fx-background-color: #f59563;
-    -fx-background-image: url('/img/dudes-theme/16.jpg');
+    -fx-background-image: url('../img/dudes-theme/16.jpg');
     -fx-background-position: center center;
     -fx-background-size: contain;
     -fx-font-size: 55;
 }
 .tile-color-32 {
     -fx-background-color: #f67c5f;
-    -fx-background-image: url('/img/dudes-theme/32.jpg');
+    -fx-background-image: url('../img/dudes-theme/32.jpg');
     -fx-background-position: center center;
     -fx-background-size: contain;
     -fx-font-size: 55;
 }
 .tile-color-64 {
     -fx-background-color: #f65e3b;
-    -fx-background-image: url('/img/dudes-theme/64.jpg');
+    -fx-background-image: url('../img/dudes-theme/64.jpg');
     -fx-background-position: center center;
     -fx-background-size: contain;
     -fx-font-size: 55;
 }
 .tile-color-128 {
     -fx-background-color: #edcf72;
-    -fx-background-image: url('/img/dudes-theme/128.jpg');
+    -fx-background-image: url('../img/dudes-theme/128.jpg');
     -fx-background-position: center center;
     -fx-background-size: contain;
     -fx-font-size: 50;
 }
 .tile-color-256 {
     -fx-background-color: #edcc61;
-    -fx-background-image: url('/img/dudes-theme/256.jpg');
+    -fx-background-image: url('../img/dudes-theme/256.jpg');
     -fx-background-position: center center;
     -fx-background-size: contain;
     -fx-font-size: 50;
 }
 .tile-color-512 {
     -fx-background-color: #edc850;
-    -fx-background-image: url('/img/dudes-theme/512.jpg');
+    -fx-background-image: url('../img/dudes-theme/512.jpg');
     -fx-background-position: center center;
     -fx-background-size: contain;
     -fx-font-size: 50;
 }
 .tile-color-1024 {
     -fx-background-color: #edc53f;
-    -fx-background-image: url('/img/dudes-theme/1024.jpg');
+    -fx-background-image: url('../img/dudes-theme/1024.jpg');
     -fx-background-position: center center;
     -fx-background-size: contain;
     -fx-font-size: 40;
 }
 .tile-color-2048 {
     -fx-background-color: #edc22e;
-    -fx-background-image: url('/img/dudes-theme/2048.jpg');
+    -fx-background-image: url('../img/dudes-theme/2048.jpg');
     -fx-background-position: center center;
     -fx-background-size: contain;
     -fx-font-size: 40;

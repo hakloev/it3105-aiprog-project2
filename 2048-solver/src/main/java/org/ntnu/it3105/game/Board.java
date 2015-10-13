@@ -33,7 +33,7 @@ public class Board {
                 tiles[row][col] = 0;
             }
         }
-
+        
         currentScore = 0;
 
         hasWon = false;
