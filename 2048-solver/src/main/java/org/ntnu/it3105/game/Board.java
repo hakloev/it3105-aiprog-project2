@@ -23,6 +23,46 @@ public class Board {
     private int currentScore;
     private int[][] tiles = new int[BOARD_SIZE][BOARD_SIZE];
 
+    /**
+     * Reset the board to a new state
+     */
+    public void initializeNewGame() {
+        log.info("Initializing a new game, clearing the board and adding two random tiles");
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
+                tiles[row][col] = 0;
+            }
+        }
+
+        currentScore = 0;
+
+        hasWon = false;
+        canMove = true;
+
+        addTile();
+        addTile();
+    }
+
+    /**
+     * Moves all tiles and promotes (to the power of 2) them if they are merged
+     * @param direction The direction to move in
+     */
+    public void doMove(Direction direction) {
+        log.debug("Moving in direction: " + direction);
+
+        int[][] movedBoard = move(this.getCopyOfBoard(), direction);
+
+        if (!Arrays.deepEquals(movedBoard, this.tiles)) {
+            log.debug("Board state changed, did move and appending tile");
+            this.tiles = movedBoard;
+            addTile();
+        } else {
+            log.debug("Board state did not change, did not append tile");
+        }
+
+        this.canMove = isPossibleToMove();
+        log.debug("Movement is possible: " + this.canMove);
+    }
 
     /**
      * Add a single tile to the board
@@ -48,6 +88,121 @@ public class Board {
     }
 
     /**
+     * Check if it is possible to make a move
+     * @return Boolean stating wether or not a move is possible
+     */
+    private boolean isPossibleToMove() {
+        if (getAllFreeCells(this.tiles).size() > 0) {
+            return true;
+        }
+
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
+                int value = tiles[row][col];
+                if ((row < 3 && value == tiles[row + 1][col]) || ((col < 3) && value == tiles[row][col + 1])) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Prints the board to the console
+     */
+    public void printBoard() {
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
+                if (tiles[row][col] == 0) {
+                    System.out.print("#");
+                } else {
+                    System.out.print(tiles[row][col]);
+                }
+            }
+            System.out.println();
+        }
+        System.out.println("\n");
+    }
+
+    /**
+     * Returns the original board
+     * @return The board
+     */
+    public int[][] getBoard() {
+        return tiles;
+    }
+
+    /**
+     * Returns a copy of the actual board
+     * @return The copy of the board
+     */
+    public int[][] getCopyOfBoard() {
+        int[][] copy = new int[BOARD_SIZE][BOARD_SIZE];
+
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            copy[i] = tiles[i].clone();
+        }
+
+        return copy;
+    }
+
+    /**
+     * Returns the current score
+     * @return the current score
+     */
+    public int getCurrentScore() {
+        return currentScore;
+    }
+
+    /**
+     * Returns is a move is possible
+     * @return Boolean with movement value
+     */
+    public boolean canMove() {
+        return canMove;
+    }
+
+    /**
+     * Returns if the game is won
+     * @return Boolean with the status
+     */
+    public boolean hasWon() {
+        return hasWon;
+    }
+
+    /* ================ STATIC FUNCTIONS =================== */
+
+    /**
+     * Rotates the board on the right
+     */
+    private static int[][] rotateClockwise(int[][] board) {
+        int[][] rotatedBoard = new int[BOARD_SIZE][BOARD_SIZE];
+
+        for(int i = 0; i < BOARD_SIZE; i++) {
+            for(int j = 0; j < BOARD_SIZE; j++) {
+                rotatedBoard[i][j] = board[BOARD_SIZE - j - 1][i];
+            }
+        }
+
+        return rotatedBoard;
+    }
+
+    /**
+     * Rotates the board on the left
+     */
+    private static int[][] rotateCounterClockwise(int[][] board) {
+        int[][] rotatedBoard = new int[BOARD_SIZE][BOARD_SIZE];
+
+        for(int i = 0; i < BOARD_SIZE; i++) {
+            for(int j = 0; j < BOARD_SIZE; j++) {
+                rotatedBoard[BOARD_SIZE - j - 1][i] = board[i][j];
+            }
+        }
+
+        return rotatedBoard;
+    }
+
+    /**
      * Returns a list of all possible positions to add a tile
      */
     public static List<Point> getAllFreeCells(int[][] board) {
@@ -62,6 +217,27 @@ public class Board {
         return freeCells;
     }
 
+    /**
+     * Returns a copy of the board sent as parameter
+     * @param board The board to copy
+     * @return The copy of the board
+     */
+    public static int[][] getCopyOfBoard(int[][] board) {
+        int[][] copy = new int[BOARD_SIZE][BOARD_SIZE];
+
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            copy[i] = board[i].clone();
+        }
+
+        return copy;
+    }
+
+    /**
+     * Moves the board paramenter in the parameter direction
+     * @param board Board to move
+     * @param direction Direction to move in
+     * @return Board in moved state
+     */
     public static int[][] move(int[][] board, Direction direction) {
         // Rotate the board to make simplify the merging algorithm
         switch (direction) {
@@ -132,166 +308,4 @@ public class Board {
         return board;
     }
 
-    /**
-     * Moves all tiles and promotes (to the power of 2) them if they are merged
-     * @param direction The direction to move in
-     */
-    public void doMove(Direction direction) {
-        log.debug("Moving in direction: " + direction);
-
-        int[][] movedBoard = move(this.getCopyOfBoard(), direction);
-
-        if (!Arrays.deepEquals(movedBoard, this.tiles)) {
-            log.debug("Board state changed, did move and appending tile");
-            this.tiles = movedBoard;
-            addTile();
-        } else {
-            log.debug("Board state did not change, did not append tile");
-        }
-
-    }
-
-    /**
-     * Rotates the board on the right
-     */
-    private static int[][] rotateClockwise(int[][] board) {
-        int[][] rotatedBoard = new int[BOARD_SIZE][BOARD_SIZE];
-
-        for(int i = 0; i < BOARD_SIZE; i++) {
-            for(int j = 0; j < BOARD_SIZE; j++) {
-                rotatedBoard[i][j] = board[BOARD_SIZE - j - 1][i];
-            }
-        }
-
-        return rotatedBoard;
-    }
-
-    /**
-     * Rotates the board on the left
-     */
-    private static int[][] rotateCounterClockwise(int[][] board) {
-        int[][] rotatedBoard = new int[BOARD_SIZE][BOARD_SIZE];
-
-        for(int i = 0; i < BOARD_SIZE; i++) {
-            for(int j = 0; j < BOARD_SIZE; j++) {
-                rotatedBoard[BOARD_SIZE - j - 1][i] = board[i][j];
-            }
-        }
-
-        return rotatedBoard;
-    }
-
-    /**
-     * Check if it is possible to make a move
-     * @return Boolean stating wether or not a move is possible
-     */
-    private boolean isPossibleToMove() {
-        for (int row = 0; row < BOARD_SIZE; row++) {
-            for (int col = 0; col < BOARD_SIZE; col++) {
-                int value = tiles[row][col];
-                if ((row < 3 && value == tiles[row + 1][col]) || ((col < 3) && value == tiles[row][col + 1])) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Prints the board to the console
-     */
-    private void printBoard() {
-        for (int row = 0; row < BOARD_SIZE; row++) {
-            for (int col = 0; col < BOARD_SIZE; col++) {
-                if (tiles[row][col] == 0) {
-                    System.out.print("#");
-                } else {
-                    System.out.print(tiles[row][col]);
-                }
-            }
-            System.out.println();
-        }
-        System.out.println("\n");
-    }
-
-    /**
-     * Returns the original board
-     * @return The board
-     */
-    public int[][] getBoard() {
-        return tiles;
-    }
-
-    /**
-     * Returns a copy of the actual board
-     * @return The copy of the board
-     */
-    public int[][] getCopyOfBoard() {
-        int[][] copy = new int[BOARD_SIZE][BOARD_SIZE];
-
-        for (int i = 0; i < BOARD_SIZE; i++) {
-            copy[i] = tiles[i].clone();
-        }
-
-        return copy;
-    }
-
-    /**
-     * Returns a copy of the board sent as parameter
-     * @param board The board to copy
-     * @return The copy of the board
-     */
-    public static int[][] getCopyOfBoard(int[][] board) {
-        int[][] copy = new int[BOARD_SIZE][BOARD_SIZE];
-
-        for (int i = 0; i < BOARD_SIZE; i++) {
-            copy[i] = board[i].clone();
-        }
-
-        return copy;
-    }
-
-    /**
-     * Reset the board to a new state
-     */
-    public void initializeNewGame() {
-        log.info("Initializing a new game, clearing the board and adding two random tiles");
-        for (int row = 0; row < BOARD_SIZE; row++) {
-            for (int col = 0; col < BOARD_SIZE; col++) {
-                tiles[row][col] = 0;
-            }
-        }
-
-        currentScore = 0;
-
-        hasWon = false;
-        canMove = true;
-
-        addTile();
-        addTile();
-    }
-
-    /**
-     * Returns the current score
-     * @return the current score
-     */
-    public int getCurrentScore() {
-        return currentScore;
-    }
-
-    /**
-     * Returns is a move is possible
-     * @return Boolean with movement value
-     */
-    public boolean canMove() {
-        return canMove;
-    }
-
-    /**
-     * Returns if the game is won
-     * @return Boolean with the status
-     */
-    public boolean hasWon() {
-        return hasWon;
-    }
 }

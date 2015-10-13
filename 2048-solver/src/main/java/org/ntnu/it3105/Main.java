@@ -41,6 +41,11 @@ public class Main extends Application {
             log.info("User pressed key: " + keyEvent.getCode());
 
             switch (keyEvent.getCode()) {
+                case R:
+                    log.debug("Restarted the game");
+                    controller.getBoard().initializeNewGame();
+                    controller.redraw(controller.getBoard().getBoard());
+                    break;
                 case S:
                     log.info("Use AI to solve the game");
                     //solver.solve();

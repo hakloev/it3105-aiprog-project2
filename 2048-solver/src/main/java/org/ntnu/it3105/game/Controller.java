@@ -34,11 +34,6 @@ public class Controller {
      * @param directionToMove
      */
     public void doMove(Direction directionToMove) {
-        if (!board.canMove()) {
-            log.info("Not able to move, the game is over");
-            return;
-        }
-
         if (!board.hasWon() && board.canMove()) {
             board.doMove(directionToMove);
             redraw(board.getBoard());
