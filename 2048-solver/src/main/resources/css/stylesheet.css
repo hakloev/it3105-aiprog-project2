@@ -57,9 +57,9 @@
 }
 .tile-color-1024 {
     -fx-background-color: #edc53f;
-    -fx-font-size: 40;
+    -fx-font-size: 35;
 }
 .tile-color-2048 {
     -fx-background-color: #edc22e;
-    -fx-font-size: 40;
+    -fx-font-size: 35;
 }
