@@ -55,7 +55,7 @@
             </GridPane>
          </children>
       </Pane>
-      <GridPane fx:id="grid" hgap="5.0" layoutY="100.0" opacity="0.5" prefHeight="401.0" prefWidth="400.0" style="-fx-background-color: rgb(145, 126, 112);" vgap="5.0">
+      <GridPane fx:id="grid" hgap="5.0" layoutY="100.0" opacity="1.0" prefHeight="401.0" prefWidth="400.0" style="-fx-background-color: rgb(145, 126, 112);" vgap="5.0">
          <columnConstraints>
             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
