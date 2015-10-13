@@ -5,8 +5,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
-import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import org.ntnu.it3105.ai.Expectimax;
 import org.ntnu.it3105.game.Controller;
 import org.ntnu.it3105.game.Direction;
@@ -26,8 +26,8 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
         log.info("Starting 2048 JavaFX application");
-
-        BasicConfigurator.configure();
+        PropertyConfigurator.configure(getClass().getClassLoader().getResource("config/log4j.properties"));
+        
         this.primaryStage = primaryStage;
 
         loadBoardAndSetScene();

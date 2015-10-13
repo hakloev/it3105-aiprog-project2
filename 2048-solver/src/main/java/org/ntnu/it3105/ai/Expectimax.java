@@ -82,11 +82,8 @@ public class Expectimax {
                     continue;
                 }
 
-                double value = expectimax(movedBoard, depth - 1, false);
+                alpha = Math.max(alpha, expectimax(movedBoard, depth - 1, false));
 
-                if (alpha > maxValue) {
-                    maxValue = value;
-                }
             }
             return maxValue;
 
