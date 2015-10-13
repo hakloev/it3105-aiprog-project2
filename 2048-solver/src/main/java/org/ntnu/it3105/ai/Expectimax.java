@@ -1,9 +1,15 @@
 package org.ntnu.it3105.ai;
 
+import com.sun.corba.se.impl.encoding.OSFCodeSetRegistry;
 import org.apache.log4j.Logger;
+import org.ntnu.it3105.game.Board;
 import org.ntnu.it3105.game.Controller;
 import org.ntnu.it3105.game.Direction;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.ntnu.it3105.game.Board.*;
 
@@ -31,10 +37,29 @@ public class Expectimax {
      */
     public Direction getNextMove() {
 
-        Direction bestDirection = Direction.UP;
         double bestValue = 0.0;
 
-        // TODO: Create ExecutorService to thread out the creation of search trees
+        Direction bestDirection = Direction.UP;
+        ConcurrentHashMap<Direction, Double> result = new ConcurrentHashMap<>();
+
+        /*
+         * This next part uses native Java 8 paralellism through the streams API to take advantage of
+         * multicore architectures.
+         */
+
+        Arrays.asList(Direction.values()).parallelStream().forEach(directionToMove -> {
+            int[][] boardCopy = controller.getBoard().getCopyOfBoard(); // Get copy of the current state in the actual board.
+            int[][] movedBoard = Board.move(boardCopy, directionToMove);
+
+            if (!Arrays.deepEquals(movedBoard, boardCopy)) {
+                double directionValue = expectimax(movedBoard, depthLimit, false);
+                result.put(directionToMove, directionValue);
+            }
+        });
+
+        /*
+         * Sequential approach
+         *
         for (Direction directionToMove : Direction.values()) {
             int[][] boardCopy = controller.getBoard().getCopyOfBoard(); // Get copy of the current state in the actual board.
             int[][] movedBoard = move(boardCopy, directionToMove);
@@ -51,6 +76,17 @@ public class Expectimax {
                 bestDirection = directionToMove;
             }
         }
+        return bestDirection;
+        */
+
+        // Fetches the best direction from the four direction
+        for (Map.Entry<Direction, Double> e: result.entrySet()) {
+            if (e.getValue() > bestValue) {
+                bestValue = e.getValue();
+                bestDirection = e.getKey();
+            }
+        }
+
         return bestDirection;
     }
 
