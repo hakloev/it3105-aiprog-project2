@@ -1,15 +1,15 @@
 package org.ntnu.it3105.ai;
 
-import com.sun.corba.se.impl.encoding.OSFCodeSetRegistry;
+import javafx.application.Platform;
 import org.apache.log4j.Logger;
 import org.ntnu.it3105.game.Board;
 import org.ntnu.it3105.game.Controller;
 import org.ntnu.it3105.game.Direction;
+
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 import static org.ntnu.it3105.game.Board.*;
 
@@ -18,17 +18,20 @@ import static org.ntnu.it3105.game.Board.*;
  * Created by Håkon Ødegård Løvdal (hakloev) on 12/10/15.
  * <p>
  */
-public class Expectimax {
+public class Expectimax implements Solver {
 
     private Logger log = Logger.getLogger(Expectimax.class);
 
     private Controller controller;
+    private ExecutorService es;
     private int depthLimit;
 
     public Expectimax(Controller controller, int depthLimit) {
-        log.info("Starting Expectimax solver");
+        log.info("Starting Expectimax solver with " + Runtime.getRuntime().availableProcessors() + " core threads");
         this.controller = controller;
         this.depthLimit = depthLimit;
+        // Let our thread pool consist of one thread per available processor core
+        this.es = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     }
 
     /**
@@ -38,53 +41,54 @@ public class Expectimax {
     public Direction getNextMove() {
 
         double bestValue = 0.0;
-
         Direction bestDirection = Direction.UP;
-        ConcurrentHashMap<Direction, Double> result = new ConcurrentHashMap<>();
 
-        /*
-         * This next part uses native Java 8 paralellism through the streams API to take advantage of
-         * multicore architectures.
+        /**
+         * The DirectionValueTuple is used as a return value from the async directional search threads
          */
+        class DirectionValueTuple {
 
-        Arrays.asList(Direction.values()).parallelStream().forEach(directionToMove -> {
-            int[][] boardCopy = controller.getBoard().getCopyOfBoard(); // Get copy of the current state in the actual board.
-            int[][] movedBoard = Board.move(boardCopy, directionToMove);
+            Direction dir;
+            Double value;
 
-            if (!Arrays.deepEquals(movedBoard, boardCopy)) {
-                double directionValue = expectimax(movedBoard, depthLimit, false);
-                result.put(directionToMove, directionValue);
-            }
-        });
-
-        /*
-         * Sequential approach
-         *
-        for (Direction directionToMove : Direction.values()) {
-            int[][] boardCopy = controller.getBoard().getCopyOfBoard(); // Get copy of the current state in the actual board.
-            int[][] movedBoard = move(boardCopy, directionToMove);
-
-            if (Arrays.deepEquals(movedBoard, boardCopy)) {
-                //log.debug("No need to try move to " + directionToMove + " since the state isn't changed");
-                continue;
-            }
-
-            double directionValue = expectimax(movedBoard, depthLimit, false);
-
-            if (directionValue > bestValue) {
-                bestValue = directionValue;
-                bestDirection = directionToMove;
+            public DirectionValueTuple(Direction d, Double v) {
+                this.dir = d;
+                this.value = v;
             }
         }
-        return bestDirection;
-        */
 
-        // Fetches the best direction from the four direction
-        for (Map.Entry<Direction, Double> e: result.entrySet()) {
-            if (e.getValue() > bestValue) {
-                bestValue = e.getValue();
-                bestDirection = e.getKey();
+        // Set up our 4 different search direction tasks
+        ArrayList<Callable<DirectionValueTuple>> tasks = new ArrayList<>();
+        for (Direction d : Direction.values()) {
+            tasks.add(() -> {
+                int[][] boardCopy = controller.getBoard().getCopyOfBoard(); // Get copy of the current state in the actual board.
+                int[][] movedBoard = Board.move(boardCopy, d);
+
+                DirectionValueTuple result = new DirectionValueTuple(d, 0.0);
+
+                if (!Arrays.deepEquals(movedBoard, boardCopy)) {
+                    result.value = expectimax(movedBoard, depthLimit, false);
+                }
+
+                return result;
+            });
+        }
+
+        // Execute and await results for all our 4 tasks
+        try {
+            for (Future<DirectionValueTuple> d : this.es.invokeAll(tasks)) {
+                DirectionValueTuple result = d.get(5, TimeUnit.SECONDS);
+                if (result.value > bestValue) {
+                    bestValue = result.value;
+                    bestDirection = result.dir;
+                }
             }
+        } catch (InterruptedException e) {
+            log.error("Interrupted during expectimax parallel search!");
+        } catch (ExecutionException e) {
+            log.error("Caught execution exception during expectimax parallel search: " + e.getMessage());
+        } catch (TimeoutException e) {
+            log.error("Execution of expectimax parallel directional search task exceeded timeout threshold!");
         }
 
         return bestDirection;
@@ -92,7 +96,7 @@ public class Expectimax {
 
     private double expectimax(int[][] board, int depth, boolean isMaximizingPlayer) {
         // Due to how 2048 works, we only have a max and chance node. We neglect the min node
-        log.debug("expectimax(" + depth + ", " + isMaximizingPlayer + ")");
+        // log.debug("expectimax(" + depth + ", " + isMaximizingPlayer + ")");
         double alpha;
 
         if (depth == 0) { // TODO: OR IS TERMINAL/VICTORY NODE
@@ -165,11 +169,31 @@ public class Expectimax {
     /**
      * Solve the entire 2048 problem using the expectimax algorithm
      */
+    @Override
     public void solve() {
+
+        long start = System.currentTimeMillis();
+        log.info("Starting solver ...");
+
         // TODO: We need some kind of delay here to ensure a visible GUI update
         while (!controller.getBoard().hasWon() && controller.getBoard().canMove()) {
             Direction directionToMove = getNextMove();
             controller.doMove(directionToMove);
+        }
+
+        log.info("Solver ended after " + ((System.currentTimeMillis() - start) / 1000) + " seconds.");
+    }
+
+    /**
+     * Shuts down the solver gracefully, by terminating the thread pool executor
+     */
+    @Override
+    public void shutdown() {
+        this.es.shutdown();
+        try {
+            this.es.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            log.error("Interrupted while awaiting ExecutorService shutdown!");
         }
     }
 

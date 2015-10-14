@@ -48,7 +48,7 @@ public class Main extends Application {
                     break;
                 case S:
                     log.info("Use AI to solve the game");
-                    //solver.solve();
+                    solver.solve();
                     break;
                 case ENTER:
                     log.info("Use AI to do one move");
@@ -73,6 +73,11 @@ public class Main extends Application {
         primaryStage.setResizable(false);
         primaryStage.setTitle("2048-solver");
         primaryStage.show();
+
+        // We send shutdown signals to our solver, since it might use a separate thread pool
+        primaryStage.setOnCloseRequest((e) -> {
+            solver.shutdown();
+        });
     }
 
     /**
