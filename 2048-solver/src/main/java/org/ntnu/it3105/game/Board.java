@@ -259,6 +259,67 @@ public class Board {
     }
 
     /**
+     * Returns the total number of merges possible in the current state
+     * @param board The board matrix instance
+     * @return An integer of the total number of merges possible in the current configuration.
+     */
+    public static int getNumPossibleMerges(int[][] board) {
+        int tot = 0;
+        for (int row = 0; row < BOARD_SIZE - 1; row += 2) {
+            for (int col = 0; col < BOARD_SIZE - 1; col++) {
+                if (board[row][col] == board[row][col + 1]) { tot++; }
+                if (board[row][col + 1] == board[row + 1][col + 1]) { tot++; }
+                if (board[row][col] == board[row + 1][col]) { tot++; }
+            }
+        }
+        return tot;
+    }
+
+    /**
+     * Checks that highest tiles are in the corners
+     * @param board Board matrix
+     * @return 100 or 0;
+     */
+    public static int highestInCorner(int[][] board) {
+        int tl, tr, bl, br;
+        tl = board[0][0];
+        tr = board[0][3];
+        bl = board[3][0];
+        br = board[3][3];
+
+        int max = 0;
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
+                if (board[row][col] > max) max = board[row][col];
+            }
+        }
+
+        if (max == tl || max == tr || max == bl || max == br) return 100;
+        return 0;
+    }
+
+    /**
+     * Crappy attempt to create a gradient weight matrix
+     * @param board
+     * @return
+     */
+    public static double getGradientValue(int[][] board) {
+        double[][] topleft = {{1, 2, 5, 15},
+                              {.1, .1, .05, .05},
+                              {.005, .005, .005, .005},
+                              {.0005, .0005, .0005, .0005}};
+
+        double wsum = 0.0;
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
+                wsum += board[row][col] * topleft[row][col];
+            }
+        }
+
+        return Math.log(wsum);
+    }
+
+    /**
      * Returns a copy of the board sent as parameter
      * @param board The board to copy
      * @return The copy of the board

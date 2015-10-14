@@ -74,7 +74,15 @@ public class Expectimax implements Solver {
                 DirectionValueTuple result = new DirectionValueTuple(d, 0.0);
 
                 if (!Arrays.deepEquals(movedBoard, boardCopy)) {
-                    result.value = expectimax(movedBoard, depthLimit, false);
+
+                    // Dynamically adjust depth limit based on free cells
+                    int freeCells = getFreeCellCount(movedBoard);
+                    int dl = depthLimit;
+                    if (freeCells < 5) dl = 8;
+                    else if (freeCells < 7) dl = 7;
+                    else if (freeCells < 9) dl = 6;
+
+                    result.value = expectimax(movedBoard, dl, false);
                 }
 
                 return result;
@@ -110,7 +118,10 @@ public class Expectimax implements Solver {
         boolean victory = isVictory(board);
 
         if (depth == 0 || victory) {
-            double heuristic = getFreeCellCount(board);
+            double heuristic = getFreeCellCount(board) * 3;
+            heuristic += getNumPossibleMerges(board) * 2;
+            heuristic += highestInCorner(board);
+            // heuristic += getGradientValue(board);
 
             return heuristic;
         }
