@@ -69,7 +69,7 @@ public class Expectimax implements Solver {
         for (Direction d : Direction.values()) {
             tasks.add(() -> {
                 int[][] boardCopy = controller.getBoard().getCopyOfBoard(); // Get copy of the current state in the actual board.
-                Object[] values = Board.move(boardCopy, d);
+                Object[] values = move(boardCopy, d); // Both board and new score returned. We only want the board
                 int[][] movedBoard = (int[][]) values[0];
 
                 DirectionValueTuple result = new DirectionValueTuple(d, 0.0);
@@ -138,7 +138,6 @@ public class Expectimax implements Solver {
             double maxValue = Double.MIN_VALUE;
             for (Direction directionToMove : Direction.values()) {
                 int[][] boardCopy = getCopyOfBoard(board); // Get copy of the board sent as argument
-
                 Object[] values = move(boardCopy, directionToMove);
                 int[][] movedBoard = (int[][]) values[0];
 

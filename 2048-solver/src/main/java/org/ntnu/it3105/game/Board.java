@@ -59,7 +59,7 @@ public class Board {
     public void doMove(Direction direction) {
         // log.debug("Moving in direction: " + direction);
 
-        Object[] values = move(this.getCopyOfBoard(), direction);
+        Object[] values = move(this.getCopyOfBoard(), direction); // move returns both the board and score respectively
 
         int[][] movedBoard = (int[][]) values[0];
 
@@ -413,6 +413,7 @@ public class Board {
                 break;
         }
 
+        // Dirty hack to return both the board and the score achieved with this move  
         Object[] values = new Object[2];
         values[0] = board;
         values[1] = score;
