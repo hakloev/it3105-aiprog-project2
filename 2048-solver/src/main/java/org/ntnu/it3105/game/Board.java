@@ -6,6 +6,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by Håkon Ødegård Løvdal (hakloev) on 13/10/15.
@@ -58,12 +59,15 @@ public class Board {
     public void doMove(Direction direction) {
         // log.debug("Moving in direction: " + direction);
 
-        int[][] movedBoard = move(this.getCopyOfBoard(), direction);
+        Object[] values = move(this.getCopyOfBoard(), direction);
+
+        int[][] movedBoard = (int[][]) values[0];
 
         if (!Arrays.deepEquals(movedBoard, this.tiles)) {
             // log.debug("Board state changed, did move and appending tile");
             this.tiles = movedBoard;
             addTile();
+            currentScore += (int) values[1];
         } else {
             // log.debug("Board state did not change, did not append tile");
         }
@@ -340,7 +344,8 @@ public class Board {
      * @param direction Direction to move in
      * @return Board in moved state
      */
-    public static int[][] move(int[][] board, Direction direction) {
+    public static Object[] move(int[][] board, Direction direction) {
+        int score = 0;
         // Rotate the board to make simplify the merging algorithm
         switch (direction) {
             case UP:
@@ -384,6 +389,7 @@ public class Board {
                     board[row][previousPosition] = board[row][col];
                     board[row][col] = 0;
                     board[row][previousPosition] *= 2;
+                    score += board[row][previousPosition]; // Update the score
 
                     lastMergePosition = previousPosition + 1;
                 } else if (board[row][previousPosition] != board[row][col] && previousPosition + 1 != col) {
@@ -407,7 +413,10 @@ public class Board {
                 break;
         }
 
-        return board;
+        Object[] values = new Object[2];
+        values[0] = board;
+        values[1] = score;
+        return values;
     }
 
 }
