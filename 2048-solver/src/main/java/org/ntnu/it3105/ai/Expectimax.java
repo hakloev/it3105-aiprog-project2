@@ -8,8 +8,9 @@ import org.ntnu.it3105.game.Direction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.ntnu.it3105.game.Board.*;
 
@@ -20,16 +21,22 @@ import static org.ntnu.it3105.game.Board.*;
  */
 public class Expectimax implements Solver {
 
+    private static long GUI_UPDATE_DELAY = 0L;
+
     private Logger log = Logger.getLogger(Expectimax.class);
 
+    private Direction[] directions;
     private Controller controller;
     private ExecutorService es;
+    private Random random;
     private int depthLimit;
 
     public Expectimax(Controller controller, int depthLimit) {
         log.info("Starting Expectimax solver with " + Runtime.getRuntime().availableProcessors() + " core threads");
         this.controller = controller;
         this.depthLimit = depthLimit;
+        this.directions = Direction.values();
+        this.random = new Random();
         // Let our thread pool consist of one thread per available processor core
         this.es = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     }
@@ -41,7 +48,7 @@ public class Expectimax implements Solver {
     public Direction getNextMove() {
 
         double bestValue = 0.0;
-        Direction bestDirection = Direction.UP;
+        Direction bestDirection = directions[random.nextInt(4)];
 
         /**
          * The DirectionValueTuple is used as a return value from the async directional search threads
@@ -78,6 +85,7 @@ public class Expectimax implements Solver {
         try {
             for (Future<DirectionValueTuple> d : this.es.invokeAll(tasks)) {
                 DirectionValueTuple result = d.get(5, TimeUnit.SECONDS);
+
                 if (result.value > bestValue) {
                     bestValue = result.value;
                     bestDirection = result.dir;
@@ -99,9 +107,11 @@ public class Expectimax implements Solver {
         // log.debug("expectimax(" + depth + ", " + isMaximizingPlayer + ")");
         double alpha;
 
-        if (depth == 0) { // TODO: OR IS TERMINAL/VICTORY NODE
-            // TODO: ADD HEURISTICS
-            double heuristic = getAllFreeCells(board).size();
+        boolean victory = isVictory(board);
+
+        if (depth == 0 || victory) {
+            double heuristic = getFreeCellCount(board);
+
             return heuristic;
         }
 
@@ -134,7 +144,7 @@ public class Expectimax implements Solver {
                 α := α + (Probability[child] * expectiminimax(child, depth-1))
              */
             alpha = 0.0;
-            double totalProbability = 0.0;
+            double totalProbability = 1.0;
             for (int row = 0; row < BOARD_SIZE; row++) {
                 for (int col = 0; col < BOARD_SIZE; col++) {
                     if (board[row][col] == 0) {
@@ -143,14 +153,14 @@ public class Expectimax implements Solver {
                         newBoard1[row][col] = 2;
                         double score = expectimax(newBoard1, depth - 1, true);
                         alpha += (0.9 * score);
-                        totalProbability += 0.9;
+                        totalProbability *= 0.9;
 
                         // Create copy for 4 tiles
                         int[][] newBoard2 = getCopyOfBoard(board);
                         newBoard2[row][col] = 4;
                         double score1 = expectimax(newBoard2, depth - 1, true);
                         alpha += (0.1 * score1);
-                        totalProbability += 0.1;
+                        totalProbability *= 0.1;
                     }
                 }
             }
@@ -171,17 +181,38 @@ public class Expectimax implements Solver {
      */
     @Override
     public void solve() {
+        controller.startSolveLoop(() -> {
+            long start = System.currentTimeMillis();
+            log.info("Starting solver ...");
 
-        long start = System.currentTimeMillis();
-        log.info("Starting solver ...");
+            // We need an atomic value signaling when the FX Application is complete with its UI update
+            AtomicBoolean complete = new AtomicBoolean(true);
+            while (!controller.getBoard().hasWon() && controller.getBoard().canMove()) {
+                // Spin until last GUI update is complete
+                while(!complete.get());
+                // Set that we are now working
+                complete.getAndSet(false);
 
-        // TODO: We need some kind of delay here to ensure a visible GUI update
-        while (!controller.getBoard().hasWon() && controller.getBoard().canMove()) {
-            Direction directionToMove = getNextMove();
-            controller.doMove(directionToMove);
-        }
+                if (GUI_UPDATE_DELAY > 0) {
+                    // Sleep for the specifi ed GUI update interval
+                    try {
+                        Thread.sleep(GUI_UPDATE_DELAY);
+                    } catch (InterruptedException e) {
+                        log.error("Interrupted during GUI Update sleep");
+                    }
+                }
 
-        log.info("Solver ended after " + ((System.currentTimeMillis() - start) / 1000) + " seconds.");
+                // Enqueue the next move + GUI update
+                Platform.runLater(() -> {
+                    Direction directionToMove = getNextMove();
+                    controller.doMove(directionToMove);
+                    // Signal that we are good to go for the next move
+                    complete.getAndSet(true);
+                });
+            }
+
+            log.info("Solver ended after " + ((System.currentTimeMillis() - start) / 1000) + " seconds.");
+        });
     }
 
     /**

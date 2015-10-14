@@ -34,7 +34,7 @@ public class Main extends Application {
         configureAndShowPrimaryStage();
 
         // Initiate the Expectimax AI
-        solver = new Expectimax(controller, 3);
+        solver = new Expectimax(controller, 5);
 
         // Setting global key listener for the scene
         scene.setOnKeyReleased((keyEvent) -> {
@@ -43,8 +43,7 @@ public class Main extends Application {
             switch (keyEvent.getCode()) {
                 case R:
                     log.debug("Restarted the game");
-                    controller.getBoard().initializeNewGame();
-                    controller.redraw(controller.getBoard().getBoard());
+                    controller.reset();
                     break;
                 case S:
                     log.info("Use AI to solve the game");
@@ -74,9 +73,10 @@ public class Main extends Application {
         primaryStage.setTitle("2048-solver");
         primaryStage.show();
 
-        // We send shutdown signals to our solver, since it might use a separate thread pool
-        primaryStage.setOnCloseRequest((e) -> {
+        // We send shutdown signals to our solver and controller, since they might use a separate thread pool
+        primaryStage.setOnCloseRequest(e -> {
             solver.shutdown();
+            controller.shutdown();
         });
     }
 

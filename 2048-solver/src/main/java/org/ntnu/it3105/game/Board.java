@@ -24,6 +24,14 @@ public class Board {
     private int[][] tiles = new int[BOARD_SIZE][BOARD_SIZE];
 
     /**
+     * Constructors
+     */
+    public Board() {}
+    public Board(int[][] existing) {
+        this.tiles = existing;
+    }
+
+    /**
      * Reset the board to a new state
      */
     public void initializeNewGame() {
@@ -48,20 +56,20 @@ public class Board {
      * @param direction The direction to move in
      */
     public void doMove(Direction direction) {
-        log.debug("Moving in direction: " + direction);
+        // log.debug("Moving in direction: " + direction);
 
         int[][] movedBoard = move(this.getCopyOfBoard(), direction);
 
         if (!Arrays.deepEquals(movedBoard, this.tiles)) {
-            log.debug("Board state changed, did move and appending tile");
+            // log.debug("Board state changed, did move and appending tile");
             this.tiles = movedBoard;
             addTile();
         } else {
-            log.debug("Board state did not change, did not append tile");
+            // log.debug("Board state did not change, did not append tile");
         }
 
         this.canMove = isPossibleToMove();
-        log.debug("Movement is possible: " + this.canMove);
+        // log.debug("Movement is possible: " + this.canMove);
     }
 
     /**
@@ -77,13 +85,13 @@ public class Board {
                 canMove = false;
                 return;
             }
-            log.debug("Possible to merge cells, but full board");
+            // log.debug("Possible to merge cells, but full board");
             return;
         }
 
         int cellToPopulate = (int)(Math.random() * allFreeCells.size());
         Point cord = allFreeCells.get(cellToPopulate);
-        log.debug("Adding tile to: (" + cord.x + ", " + cord.y + ") col/row");
+        // log.debug("Adding tile to: (" + cord.x + ", " + cord.y + ") col/row");
         tiles[cord.y][cord.x] = Math.random() < 0.9 ? 2 : 4;
     }
 
@@ -215,6 +223,39 @@ public class Board {
             }
         }
         return freeCells;
+    }
+
+    /**
+     * Returns an integer of the amount of free cells on a board
+     * @param board The board matrix
+     * @return An integer of the amount of free cells
+     */
+    public static int getFreeCellCount(int[][] board) {
+        int free = 0;
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
+                if (board[row][col] == 0) {
+                    free++;
+                }
+            }
+        }
+        return free;
+    }
+
+    /**
+     * Checks whether a state is a victory
+     * @param board The board instance
+     * @return
+     */
+    public static boolean isVictory(int[][] board) {
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
+                if (board[row][col] == TARGET_VALUE) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

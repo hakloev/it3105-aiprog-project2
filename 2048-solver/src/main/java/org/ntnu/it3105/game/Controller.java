@@ -1,9 +1,12 @@
 package org.ntnu.it3105.game;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import org.apache.log4j.Logger;
+
+import java.util.concurrent.*;
 
 /**
  * Created by Håkon Ødegård Løvdal (hakloev) on 07/10/15.
@@ -18,6 +21,8 @@ public class Controller {
     private @FXML Label bestLabel; // Best score over time
 
     private Board board;
+    private Board drawingboard;
+    private ExecutorService es;
 
     /**
      * Initialize method called when FXMLLoader loads the Board.fxml
@@ -26,12 +31,14 @@ public class Controller {
         log.info("GameController initializing");
         board = new Board();
         board.initializeNewGame();
-        redraw(board.getBoard());
+        drawingboard = new Board(board.getCopyOfBoard());
+        es = Executors.newSingleThreadExecutor();
+        redraw(drawingboard.getBoard());
     }
 
     /**
      * Delegates the movement to the board if possible
-     * @param directionToMove
+     * @param directionToMove The direction to move
      */
     public void doMove(Direction directionToMove) {
         if (!board.hasWon() && board.canMove()) {
@@ -44,7 +51,7 @@ public class Controller {
      * Redraw the entire GridPane with new tiles
      */
     public void redraw(int[][] board) {
-        log.debug("Redrawing the GUI");
+        // log.debug("Redrawing the GUI");
         grid.getChildren().clear();
 
         scoreLabel.setText(String.valueOf(this.board.getCurrentScore()));
@@ -58,6 +65,23 @@ public class Controller {
     }
 
     /**
+     * Resets the board
+     */
+    public void reset() {
+        this.board.initializeNewGame();
+        this.drawingboard = new Board(this.board.getCopyOfBoard());
+        redraw(this.drawingboard.getBoard());
+    }
+
+    /**
+     * Starts the solve loop
+     * @param r The Runnable job
+     */
+    public void startSolveLoop(Runnable r) {
+        this.es.execute(r);
+    }
+
+    /**
      * Get the board reference
      * @return The board reference
      */
@@ -65,4 +89,15 @@ public class Controller {
         return board;
     }
 
+    /**
+     * Shuts down the Controller gracefully
+     */
+    public void shutdown() {
+        this.es.shutdown();
+        try {
+            this.es.awaitTermination(5L, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            log.error("Interrupted during ExecutorService shutdown");
+        }
+    }
 }
