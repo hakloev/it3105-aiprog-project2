@@ -22,6 +22,7 @@ public class Controller {
 
     private Board board;
     private Board drawingboard;
+    private Record recordManager;
     private ExecutorService es;
 
     /**
@@ -32,6 +33,7 @@ public class Controller {
         board = new Board();
         board.initializeNewGame();
         drawingboard = new Board(board.getCopyOfBoard());
+        recordManager = Record.getInstance();
         es = Executors.newSingleThreadExecutor();
         redraw(drawingboard.getBoard());
     }
@@ -43,6 +45,7 @@ public class Controller {
     public void doMove(Direction directionToMove) {
         if (!board.hasWon() && board.canMove()) {
             board.doMove(directionToMove);
+            recordManager.saveRecord(board.getCurrentScore());
             redraw(board.getBoard());
         }
     }
@@ -55,6 +58,7 @@ public class Controller {
         grid.getChildren().clear();
 
         scoreLabel.setText(String.valueOf(this.board.getCurrentScore()));
+        bestLabel.setText(String.valueOf(recordManager.getRecord()));
 
         for (int row = 0; row < Board.BOARD_SIZE; row++) {
             for (int col = 0; col < Board.BOARD_SIZE; col++) {

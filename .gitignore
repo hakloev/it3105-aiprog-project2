@@ -19,6 +19,9 @@ hs_err_pid*
 
 *.iml
 
+2048-solver/record.properties
+2048-solver/2048.log*
+
 # Maven
 2048-solver/target/
 pom.xml.tag

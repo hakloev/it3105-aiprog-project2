@@ -10,6 +10,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.ntnu.it3105.ai.Expectimax;
 import org.ntnu.it3105.game.Controller;
 import org.ntnu.it3105.game.Direction;
+
 import java.io.IOException;
 
 public class Main extends Application {

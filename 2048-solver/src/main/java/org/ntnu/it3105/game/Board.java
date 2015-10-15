@@ -6,7 +6,6 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Created by Håkon Ødegård Løvdal (hakloev) on 13/10/15.
@@ -413,7 +412,7 @@ public class Board {
                 break;
         }
 
-        // Dirty hack to return both the board and the score achieved with this move  
+        // Dirty hack to return both the board and the score achieved with this move
         Object[] values = new Object[2];
         values[0] = board;
         values[1] = score;
