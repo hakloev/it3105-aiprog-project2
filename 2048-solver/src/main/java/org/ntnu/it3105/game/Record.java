@@ -52,7 +52,7 @@ public class Record {
         if (oldRecord > newRecord) {
             return;
         }
-        
+
         OutputStream output = null;
         try {
             properties.setProperty("record", Integer.toString(Math.max(oldRecord, newRecord)));

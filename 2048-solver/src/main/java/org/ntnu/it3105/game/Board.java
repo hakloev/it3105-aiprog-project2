@@ -283,7 +283,7 @@ public class Board {
      * @param board Board matrix
      * @return 100 or 0;
      */
-    public static int highestInCorner(int[][] board) {
+    public static double highestInCorner(int[][] board) {
         int tl, tr, bl, br;
         tl = board[0][0];
         tr = board[0][3];
@@ -297,8 +297,8 @@ public class Board {
             }
         }
 
-        if (max == tl || max == tr || max == bl || max == br) return 100;
-        return 0;
+        if (max == tl || max == tr || max == bl || max == br) return Math.log(100);
+        return 0.0;
     }
 
     /**
@@ -307,10 +307,10 @@ public class Board {
      * @return
      */
     public static double getGradientValue(int[][] board) {
-        double[][] topleft = {{1, 2, 5, 15},
-                              {.1, .1, .05, .05},
-                              {.005, .005, .005, .005},
-                              {.0005, .0005, .0005, .0005}};
+        double[][] topleft = {{ 10,  55,  100,  200},
+                              { 5,   10,  100,  100},
+                              { 1,    5,  10,  50},
+                              { 0,    1,   5,  10}};
 
         double wsum = 0.0;
         for (int row = 0; row < BOARD_SIZE; row++) {
@@ -320,6 +320,15 @@ public class Board {
         }
 
         return Math.log(wsum);
+    }
+
+    public static boolean rightmostNotFull(int[][] board) {
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            if (board[row][3] == 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

@@ -74,6 +74,12 @@ public class Expectimax implements Solver {
 
                 DirectionValueTuple result = new DirectionValueTuple(d, 0.0);
 
+                if (d == Direction.DOWN && rightmostNotFull(movedBoard)) {
+                    log.info("Not full, skip it");
+                    result.value = Double.MIN_VALUE;
+                    return result;
+                }
+
                 if (!Arrays.deepEquals(movedBoard, boardCopy)) {
 
                     // Dynamically adjust depth limit based on free cells
@@ -115,16 +121,21 @@ public class Expectimax implements Solver {
         // Due to how 2048 works, we only have a max and chance node. We neglect the min node
         // log.debug("expectimax(" + depth + ", " + isMaximizingPlayer + ")");
         double alpha;
-
         boolean victory = isVictory(board);
 
         if (depth == 0 || victory) {
-            double heuristic = getFreeCellCount(board) * 3;
-            heuristic += getNumPossibleMerges(board) * 2;
-            heuristic += highestInCorner(board);
-            // heuristic += getGradientValue(board);
+            double heuristic = 0.0;
+            heuristic += Math.log(getFreeCellCount(board));
+            heuristic += Math.log(getNumPossibleMerges(board));
+            heuristic += highestInCorner(board) * 1.3;
+            heuristic += getGradientValue(board) * 1.15;
 
+            //log.info("" + " "+ first + " " + second + " " + third + " " + fourth);
+
+            //log.info("BottomORVictory ("+depth+"): Heuristic: " + heuristic);
             return heuristic;
+            //return first + second + third + fourth;
+            //return fourth;
         }
 
         if (isMaximizingPlayer) {
@@ -135,7 +146,7 @@ public class Expectimax implements Solver {
                 α := max(α, expectiminimax(child, depth-1))
              */
             alpha = 0.0;
-            double maxValue = Double.MIN_VALUE;
+            //double maxValue = Double.NEGATIVE_INFINITY;
             for (Direction directionToMove : Direction.values()) {
                 int[][] boardCopy = getCopyOfBoard(board); // Get copy of the board sent as argument
                 Object[] values = move(boardCopy, directionToMove);
@@ -147,7 +158,8 @@ public class Expectimax implements Solver {
 
                 alpha = Math.max(alpha, expectimax(movedBoard, depth - 1, false));
             }
-            return maxValue;
+            //log.info("MAX NODE (" + depth + "): MaxValue: " + alpha);
+            return alpha;
 
         } else {
             /*
@@ -177,7 +189,9 @@ public class Expectimax implements Solver {
                     }
                 }
             }
-            return alpha / totalProbability;
+            double value = Math.pow((alpha / totalProbability), 0.1);
+            //log.info("CHANCE NODE ("+ depth +"): Alpha: " + alpha + " TotalProb: " + totalProbability + " Tot: " + value);
+            return value;
         }
     }
 
