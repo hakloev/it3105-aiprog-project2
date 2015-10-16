@@ -75,7 +75,7 @@ public class Expectimax implements Solver {
                 DirectionValueTuple result = new DirectionValueTuple(d, 0.0);
 
                 if (d == Direction.DOWN && rightmostNotFull(movedBoard)) {
-                    log.info("Not full, skip it");
+                    //log.info("Not full, skip it");
                     result.value = Double.MIN_VALUE;
                     return result;
                 }
@@ -86,8 +86,8 @@ public class Expectimax implements Solver {
                     int freeCells = getFreeCellCount(movedBoard);
                     int dl = depthLimit;
                     if (freeCells < 5) dl = 8;
-                    else if (freeCells < 7) dl = 7;
-                    else if (freeCells < 9) dl = 6;
+                    else if (freeCells < 7) dl = 6;
+                    else if (freeCells < 9) dl = 4;
 
                     result.value = expectimax(movedBoard, dl, false);
                 }
@@ -125,17 +125,15 @@ public class Expectimax implements Solver {
 
         if (depth == 0 || victory) {
             double heuristic = 0.0;
-            heuristic += Math.log(getFreeCellCount(board));
-            heuristic += Math.log(getNumPossibleMerges(board));
-            heuristic += highestInCorner(board) * 1.3;
-            heuristic += getGradientValue(board) * 1.15;
+            double h1 = Math.log(getFreeCellCount(board));
+            double h2 = Math.log(getNumPossibleMerges(board));
+            double h3 = highestInCorner(board) * 1.3;
+            double h4 = getGradientValue(board) * 1.2;
 
-            //log.info("" + " "+ first + " " + second + " " + third + " " + fourth);
-
+            //log.info("BottomORVictory (" + depth + "): h1: " + h1 + " h2: " + h2 + " h3: " + h3 + " h4: " + h4);
             //log.info("BottomORVictory ("+depth+"): Heuristic: " + heuristic);
-            return heuristic;
-            //return first + second + third + fourth;
-            //return fourth;
+            return h1 + h2 + h3 + h4;
+            //return heuristic;
         }
 
         if (isMaximizingPlayer) {
@@ -168,8 +166,8 @@ public class Expectimax implements Solver {
             foreach child of node
                 α := α + (Probability[child] * expectiminimax(child, depth-1))
              */
-            alpha = 0.0;
-            double totalProbability = 1.0;
+            alpha = Double.MIN_VALUE;
+            double totalProbability = 0.0;
             for (int row = 0; row < BOARD_SIZE; row++) {
                 for (int col = 0; col < BOARD_SIZE; col++) {
                     if (board[row][col] == 0) {
@@ -178,18 +176,19 @@ public class Expectimax implements Solver {
                         newBoard1[row][col] = 2;
                         double score = expectimax(newBoard1, depth - 1, true);
                         alpha += (0.9 * score);
-                        totalProbability *= 0.9;
+                        totalProbability += 0.9;
 
                         // Create copy for 4 tiles
                         int[][] newBoard2 = getCopyOfBoard(board);
                         newBoard2[row][col] = 4;
                         double score1 = expectimax(newBoard2, depth - 1, true);
                         alpha += (0.1 * score1);
-                        totalProbability *= 0.1;
+                        totalProbability += 0.1;
                     }
                 }
             }
-            double value = Math.pow((alpha / totalProbability), 0.1);
+            //double value = Math.pow((alpha / totalProbability), 0.1);
+            double value = (alpha / totalProbability);
             //log.info("CHANCE NODE ("+ depth +"): Alpha: " + alpha + " TotalProb: " + totalProbability + " Tot: " + value);
             return value;
         }

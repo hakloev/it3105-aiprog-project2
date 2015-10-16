@@ -16,7 +16,7 @@ public class Board {
     private Logger log = Logger.getLogger(Controller.class);
 
     public static int BOARD_SIZE = 4;
-    public static int TARGET_VALUE = 2048;
+    public static int TARGET_VALUE = 4096;
 
     private boolean hasWon;
     private boolean canMove;
@@ -297,8 +297,8 @@ public class Board {
             }
         }
 
-        if (max == tl || max == tr || max == bl || max == br) return Math.log(100);
-        return 0.0;
+        if (max == tl || max == tr || max == bl || max == br) return Math.log(max * 50);
+        else return Math.log(max);
     }
 
     /**
@@ -307,11 +307,34 @@ public class Board {
      * @return
      */
     public static double getGradientValue(int[][] board) {
-        double[][] topleft = {{ 10,  55,  100,  200},
-                              { 5,   10,  100,  100},
-                              { 1,    5,  10,  50},
-                              { 0,    1,   5,  10}};
+        double[][] topright =
+                        {{ 1,  5,  10, 50},
+                        {  0,  1,  3,  10},
+                        { -1, 0,   1,  5},
+                        { -3, -1,  0,  1}};
 
+
+        double[][] topleft =
+                        {{10,  5, 3, 1},
+                        { 5,   3, 1, 0},
+                        { 3,   1,  0, -1},
+                        { 1,   0,  -1, -10}};
+
+
+        double[][][] all = new double[][][] {topright};
+
+        double score = 0.0;
+        double bestScore = Double.MIN_VALUE;
+        for (double[][] weight : all) {
+            for (int row = 0; row < BOARD_SIZE; row++) {
+                for (int col = 0; col < BOARD_SIZE; col++) {
+                    score += (board[row][col] * weight[row][col]);
+                }
+            }
+            bestScore = Math.max(score, bestScore);
+            score = 0.0;
+        }
+        /*
         double wsum = 0.0;
         for (int row = 0; row < BOARD_SIZE; row++) {
             for (int col = 0; col < BOARD_SIZE; col++) {
@@ -320,6 +343,9 @@ public class Board {
         }
 
         return Math.log(wsum);
+        */
+
+        return Math.log(bestScore);
     }
 
     public static boolean rightmostNotFull(int[][] board) {
