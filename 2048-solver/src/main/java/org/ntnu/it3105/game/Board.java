@@ -16,7 +16,7 @@ public class Board {
     private Logger log = Logger.getLogger(Controller.class);
 
     public static int BOARD_SIZE = 4;
-    public static int TARGET_VALUE = 4096;
+    public static int TARGET_VALUE = 8192;
 
     private boolean hasWon;
     private boolean canMove;
@@ -281,7 +281,7 @@ public class Board {
     /**
      * Checks that highest tiles are in the corners
      * @param board Board matrix
-     * @return 100 or 0;
+     * @return Logarithmic value of max tile;
      */
     public static double highestInCorner(int[][] board) {
         int tl, tr, bl, br;
@@ -309,19 +309,19 @@ public class Board {
     public static double getGradientValue(int[][] board) {
         double[][] topright =
                         {{ 1,  5,  10, 50},
-                        {  0,  1,  3,  10},
-                        { -1, 0,   1,  5},
+                        {  0,  1,  5,  10},
+                        { -1,  0,  1,  5},
                         { -3, -1,  0,  1}};
 
 
         double[][] topleft =
-                        {{10,  5, 3, 1},
-                        { 5,   3, 1, 0},
-                        { 3,   1,  0, -1},
-                        { 1,   0,  -1, -10}};
+                        {{50, 10,  5,  1},
+                        { 10,  5,  1,  0},
+                        { 5,   1,  0, -1},
+                        { 1,   0, -1, -3}};
 
 
-        double[][][] all = new double[][][] {topright};
+        double[][][] all = new double[][][] {topright, topleft};
 
         double score = 0.0;
         double bestScore = Double.MIN_VALUE;

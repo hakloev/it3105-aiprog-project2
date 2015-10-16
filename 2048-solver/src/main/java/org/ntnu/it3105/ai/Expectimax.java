@@ -85,7 +85,8 @@ public class Expectimax implements Solver {
                     // Dynamically adjust depth limit based on free cells
                     int freeCells = getFreeCellCount(movedBoard);
                     int dl = depthLimit;
-                    if (freeCells < 5) dl = 8;
+                    if (freeCells < 3) dl = 10;
+                    else if (freeCells < 5) dl = 8;
                     else if (freeCells < 7) dl = 6;
                     else if (freeCells < 9) dl = 4;
 
@@ -133,7 +134,6 @@ public class Expectimax implements Solver {
             //log.info("BottomORVictory (" + depth + "): h1: " + h1 + " h2: " + h2 + " h3: " + h3 + " h4: " + h4);
             //log.info("BottomORVictory ("+depth+"): Heuristic: " + heuristic);
             return h1 + h2 + h3 + h4;
-            //return heuristic;
         }
 
         if (isMaximizingPlayer) {
