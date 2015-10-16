@@ -301,6 +301,22 @@ public class Board {
         else return Math.log(max);
     }
 
+    public static double getSnakeValue(int[][] board) {
+        double[][] snake =
+                        {{ 0,  7,  8, 15},
+                        {  1,  6,  9,  14},
+                        { 2,  5,  10,  13},
+                        { 3, 4,  11,  12}};
+
+        double score = 0.0;
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
+                score += (board[row][col] * snake[row][col]);
+            }
+        }
+        return Math.log(score);
+    }
+
     /**
      * Crappy attempt to create a gradient weight matrix
      * @param board
@@ -334,16 +350,6 @@ public class Board {
             bestScore = Math.max(score, bestScore);
             score = 0.0;
         }
-        /*
-        double wsum = 0.0;
-        for (int row = 0; row < BOARD_SIZE; row++) {
-            for (int col = 0; col < BOARD_SIZE; col++) {
-                wsum += board[row][col] * topleft[row][col];
-            }
-        }
-
-        return Math.log(wsum);
-        */
 
         return Math.log(bestScore);
     }

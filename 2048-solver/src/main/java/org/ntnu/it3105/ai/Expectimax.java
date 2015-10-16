@@ -125,14 +125,23 @@ public class Expectimax implements Solver {
         boolean victory = isVictory(board);
 
         if (depth == 0 || victory) {
-            double heuristic = 0.0;
+            /* THIS IS THE GRADIENT VERSION */
             double h1 = Math.log(getFreeCellCount(board));
             double h2 = Math.log(getNumPossibleMerges(board));
             double h3 = highestInCorner(board) * 1.3;
             double h4 = getGradientValue(board) * 1.2;
 
+
+            /* THIS IS THE SNAKE VERSION
+            double h1 = highestInCorner(board) * 1.3;
+            double h2 = getSnakeValue(board) * 1.2;
+            double h3 = Math.log(getFreeCellCount(board));
+            double h4 = Math.log(getNumPossibleMerges(board));
+            */
+
             //log.info("BottomORVictory (" + depth + "): h1: " + h1 + " h2: " + h2 + " h3: " + h3 + " h4: " + h4);
             //log.info("BottomORVictory ("+depth+"): Heuristic: " + heuristic);
+            //return h1 + h2 + h3;
             return h1 + h2 + h3 + h4;
         }
 
