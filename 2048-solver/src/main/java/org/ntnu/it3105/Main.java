@@ -98,8 +98,8 @@ public class Main extends Application {
 
         scene = new Scene(root);
         // Change theme here
-        scene.getStylesheets().add("css/stylesheet.css");
-        // scene.getStylesheets().add("css/dudes.css");
+        // scene.getStylesheets().add("css/stylesheet.css");
+        scene.getStylesheets().add("css/dudes.css");
         this.primaryStage.setScene(scene);
     }
 

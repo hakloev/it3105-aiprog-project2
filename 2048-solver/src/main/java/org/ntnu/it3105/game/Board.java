@@ -354,7 +354,7 @@ public class Board {
      */
     public static Object[] move(int[][] board, Direction direction) {
         int score = 0;
-        // Rotate the board to make simplify the merging algorithm
+        // Rotate the board to simplify the merging algorithm
         switch (direction) {
             case UP:
                 board = rotateCounterClockwise(board);
