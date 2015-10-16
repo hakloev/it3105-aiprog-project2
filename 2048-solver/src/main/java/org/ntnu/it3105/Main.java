@@ -35,7 +35,7 @@ public class Main extends Application {
         configureAndShowPrimaryStage();
 
         // Initiate the Expectimax AI
-        solver = new Expectimax(controller, 5);
+        solver = new Expectimax(controller, 4);
 
         // Setting global key listener for the scene
         scene.setOnKeyReleased((keyEvent) -> {
@@ -98,8 +98,10 @@ public class Main extends Application {
 
         scene = new Scene(root);
         // Change theme here
+
         // scene.getStylesheets().add("css/stylesheet.css");
         scene.getStylesheets().add("css/dudes.css");
+
         this.primaryStage.setScene(scene);
     }
 

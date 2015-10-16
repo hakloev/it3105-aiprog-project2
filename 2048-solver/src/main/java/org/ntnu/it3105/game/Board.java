@@ -16,7 +16,7 @@ public class Board {
     private Logger log = Logger.getLogger(Controller.class);
 
     public static int BOARD_SIZE = 4;
-    public static int TARGET_VALUE = 2048;
+    public static int TARGET_VALUE = 8192;
 
     private boolean hasWon;
     private boolean canMove;
@@ -281,7 +281,7 @@ public class Board {
     /**
      * Checks that highest tiles are in the corners
      * @param board Board matrix
-     * @return 100 or 0;
+     * @return Logarithmic value of max tile;
      */
     public static double highestInCorner(int[][] board) {
         int tl, tr, bl, br;
@@ -297,8 +297,24 @@ public class Board {
             }
         }
 
-        if (max == tl || max == tr || max == bl || max == br) return Math.log(100);
-        return 0.0;
+        if (max == tl || max == tr || max == bl || max == br) return Math.log(max * 50);
+        else return Math.log(max);
+    }
+
+    public static double getSnakeValue(int[][] board) {
+        double[][] snake =
+                        {{ 0,  7,  8, 15},
+                        {  1,  6,  9,  14},
+                        { 2,  5,  10,  13},
+                        { 3, 4,  11,  12}};
+
+        double score = 0.0;
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
+                score += (board[row][col] * snake[row][col]);
+            }
+        }
+        return Math.log(score);
     }
 
     /**
@@ -307,19 +323,35 @@ public class Board {
      * @return
      */
     public static double getGradientValue(int[][] board) {
-        double[][] topleft = {{ 10,  55,  100,  200},
-                              { 5,   10,  100,  100},
-                              { 1,    5,  10,  50},
-                              { 0,    1,   5,  10}};
+        double[][] topright =
+                        {{ 1,  5,  10, 50},
+                        {  0,  1,  5,  10},
+                        { -1,  0,  1,  5},
+                        { -3, -1,  0,  1}};
 
-        double wsum = 0.0;
-        for (int row = 0; row < BOARD_SIZE; row++) {
-            for (int col = 0; col < BOARD_SIZE; col++) {
-                wsum += board[row][col] * topleft[row][col];
+
+        double[][] topleft =
+                        {{50, 10,  5,  1},
+                        { 10,  5,  1,  0},
+                        { 5,   1,  0, -1},
+                        { 1,   0, -1, -3}};
+
+
+        double[][][] all = new double[][][] {topright, topleft};
+
+        double score = 0.0;
+        double bestScore = Double.MIN_VALUE;
+        for (double[][] weight : all) {
+            for (int row = 0; row < BOARD_SIZE; row++) {
+                for (int col = 0; col < BOARD_SIZE; col++) {
+                    score += (board[row][col] * weight[row][col]);
+                }
             }
+            bestScore = Math.max(score, bestScore);
+            score = 0.0;
         }
 
-        return Math.log(wsum);
+        return Math.log(bestScore);
     }
 
     public static boolean rightmostNotFull(int[][] board) {
