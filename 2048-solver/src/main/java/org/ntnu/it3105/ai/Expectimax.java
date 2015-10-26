@@ -85,8 +85,8 @@ public class Expectimax implements Solver {
                     int freeCells = getFreeCellCount(movedBoard);
                     int dl = depthLimit;
                     if (freeCells < 2) dl = 10;
-                    else if (freeCells < 4) dl = 8;
-                    else if (freeCells < 6) dl = 6;
+                    else if (freeCells < 3) dl = 8;
+                    else if (freeCells < 4) dl = 6;
 
                     result.value = expectimax(movedBoard, dl, false);
                 }
