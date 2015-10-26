@@ -72,7 +72,7 @@ public class Expectimax implements Solver {
                 Object[] values = move(boardCopy, d); // Both board and new score returned. We only want the board
                 int[][] movedBoard = (int[][]) values[0];
 
-                DirectionValueTuple result = new DirectionValueTuple(d, 0.0);
+                DirectionValueTuple result = new DirectionValueTuple(d, Double.MIN_VALUE);
 
                 if (d == Direction.DOWN && rightmostNotFull(movedBoard)) {
                     //log.info("Not full, skip it");
@@ -80,7 +80,7 @@ public class Expectimax implements Solver {
                     return result;
                 }
 
-                if (!Arrays.deepEquals(movedBoard, boardCopy)) {
+                if (!Arrays.deepEquals(movedBoard, controller.getBoard().getCopyOfBoard())) {
 
                     // Dynamically adjust depth limit based on free cells
                     int freeCells = getFreeCellCount(movedBoard);
@@ -102,6 +102,7 @@ public class Expectimax implements Solver {
             for (Future<DirectionValueTuple> d : this.es.invokeAll(tasks)) {
                 DirectionValueTuple result = d.get(5, TimeUnit.SECONDS);
 
+                log.info("Direction " + result.dir + " with value " + result.value);
                 if (result.value > bestValue) {
                     bestValue = result.value;
                     bestDirection = result.dir;
@@ -115,6 +116,7 @@ public class Expectimax implements Solver {
             log.error("Execution of expectimax parallel directional search task exceeded timeout threshold!");
         }
 
+        log.info("Moving in direction: " + bestDirection + " with value " + bestValue);
         return bestDirection;
     }
 
@@ -126,23 +128,24 @@ public class Expectimax implements Solver {
 
         if (depth == 0 || victory) {
             /* THIS IS THE GRADIENT VERSION */
-            double h1 = Math.log(getFreeCellCount(board));
-            double h2 = Math.log(getNumPossibleMerges(board));
-            double h3 = highestInCorner(board) * 1.3;
-            double h4 = getGradientValue(board) * 1.2;
+            //double h1 = Math.log(getFreeCellCount(board));
+            //double h2 = Math.log(getNumPossibleMerges(board));
+            //double h3 = highestInCorner(board) * 1.3;
+            //double h4 = getGradientValue(board) * 1.2;
 
 
-            /* THIS IS THE SNAKE VERSION
-            double h1 = highestInCorner(board) * 1.3;
-            double h2 = getSnakeValue(board) * 1.2;
-            double h3 = Math.log(getFreeCellCount(board));
-            double h4 = Math.log(getNumPossibleMerges(board));
-            */
+            /* THIS IS THE SNAKE VERSION */
+            //double h1 = highestInCorner(board) * 1.3;
+            double h2 = getSnakeValue(board);
+            //double h3 = Math.log(getFreeCellCount(board));
+            //double h4 = Math.log(getNumPossibleMerges(board));
+
 
             //log.info("BottomORVictory (" + depth + "): h1: " + h1 + " h2: " + h2 + " h3: " + h3 + " h4: " + h4);
             //log.info("BottomORVictory ("+depth+"): Heuristic: " + heuristic);
             //return h1 + h2 + h3;
-            return h1 + h2 + h3 + h4;
+            //return h1 + h3 + h4;
+            return h2;
         }
 
         if (isMaximizingPlayer) {

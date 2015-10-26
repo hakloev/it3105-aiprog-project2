@@ -297,16 +297,16 @@ public class Board {
             }
         }
 
-        if (max == tl || max == tr || max == bl || max == br) return Math.log(max * 50);
-        else return Math.log(max);
+        if (max == tl || max == tr || max == bl || max == br) return Math.log(max * 10);
+        else return Math.log(max / 10);
     }
 
     public static double getSnakeValue(int[][] board) {
         double[][] snake =
-                        {{ 0,  7,  8, 15},
-                        {  1,  6,  9,  14},
-                        { 2,  5,  10,  13},
-                        { 3, 4,  11,  12}};
+                        {{ 1,  128,  256, 32768},
+                        {  2,  64,  512,  16384},
+                        {  4,  32,  1024,  8192},
+                        {  8,  16,  2048,  4096}};
 
         double score = 0.0;
         for (int row = 0; row < BOARD_SIZE; row++) {
@@ -330,14 +330,15 @@ public class Board {
                         { -3, -1,  0,  1}};
 
 
+        /*
         double[][] topleft =
                         {{50, 10,  5,  1},
                         { 10,  5,  1,  0},
                         { 5,   1,  0, -1},
                         { 1,   0, -1, -3}};
 
-
-        double[][][] all = new double[][][] {topright, topleft};
+        */
+        double[][][] all = new double[][][] {topright};
 
         double score = 0.0;
         double bestScore = Double.MIN_VALUE;
