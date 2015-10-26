@@ -16,7 +16,7 @@ public class Board {
     private Logger log = Logger.getLogger(Controller.class);
 
     public static int BOARD_SIZE = 4;
-    public static int TARGET_VALUE = 8192;
+    public static int TARGET_VALUE = 32768;
 
     private boolean hasWon;
     private boolean canMove;

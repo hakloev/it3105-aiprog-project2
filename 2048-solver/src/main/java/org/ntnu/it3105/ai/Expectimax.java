@@ -72,7 +72,7 @@ public class Expectimax implements Solver {
                 Object[] values = move(boardCopy, d); // Both board and new score returned. We only want the board
                 int[][] movedBoard = (int[][]) values[0];
 
-                DirectionValueTuple result = new DirectionValueTuple(d, Double.MIN_VALUE);
+                DirectionValueTuple result = new DirectionValueTuple(d, 0.0);
 
                 if (d == Direction.DOWN && rightmostNotFull(movedBoard)) {
                     //log.info("Not full, skip it");
@@ -80,15 +80,13 @@ public class Expectimax implements Solver {
                     return result;
                 }
 
-                if (!Arrays.deepEquals(movedBoard, controller.getBoard().getCopyOfBoard())) {
-
+                if (!Arrays.deepEquals(movedBoard, boardCopy)) {
                     // Dynamically adjust depth limit based on free cells
                     int freeCells = getFreeCellCount(movedBoard);
                     int dl = depthLimit;
-                    if (freeCells < 3) dl = 10;
-                    else if (freeCells < 5) dl = 8;
-                    else if (freeCells < 7) dl = 6;
-                    else if (freeCells < 9) dl = 4;
+                    if (freeCells < 2) dl = 10;
+                    else if (freeCells < 4) dl = 8;
+                    else if (freeCells < 6) dl = 6;
 
                     result.value = expectimax(movedBoard, dl, false);
                 }
@@ -128,10 +126,7 @@ public class Expectimax implements Solver {
 
         if (depth == 0 || victory) {
             /* THIS IS THE GRADIENT VERSION */
-            //double h1 = Math.log(getFreeCellCount(board));
-            //double h2 = Math.log(getNumPossibleMerges(board));
-            //double h3 = highestInCorner(board) * 1.3;
-            //double h4 = getGradientValue(board) * 1.2;
+            //double h2 = getGradientValue(board) * 1.2;
 
 
             /* THIS IS THE SNAKE VERSION */
@@ -141,8 +136,8 @@ public class Expectimax implements Solver {
             //double h4 = Math.log(getNumPossibleMerges(board));
 
 
-            //log.info("BottomORVictory (" + depth + "): h1: " + h1 + " h2: " + h2 + " h3: " + h3 + " h4: " + h4);
-            //log.info("BottomORVictory ("+depth+"): Heuristic: " + heuristic);
+            //log.info("BottomORVictory (" + depth + "): h2: " + h2 + " h3: " + h3  + " h4: " + h4);
+            //log.info("BottomORVictory ("+depth+"): Heuristic: " + h2);
             //return h1 + h2 + h3;
             //return h1 + h3 + h4;
             return h2;

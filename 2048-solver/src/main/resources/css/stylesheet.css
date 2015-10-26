@@ -67,3 +67,7 @@
     -fx-background-color: mediumorchid;
     -fx-font-size: 35;
 }
+.tile-color-8192 {
+     -fx-background-color: black;
+     -fx-font-size: 35;
+ }
