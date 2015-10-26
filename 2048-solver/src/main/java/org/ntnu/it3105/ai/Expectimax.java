@@ -189,7 +189,7 @@ public class Expectimax implements Solver {
                         double score1 = expectimax(newBoard2, depth - 1, true);
                         alpha += (0.1 * score1);
 
-                        totalChildren ++;
+                        totalChildren++;
                     }
                 }
             }
