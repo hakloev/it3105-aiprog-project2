@@ -301,12 +301,17 @@ public class Board {
         else return Math.log(max / 10);
     }
 
+    /**
+     * Returns a value for the board multiplied with a weight matrix
+     * @param board The board to evaluate
+     * @return The log value of the sum
+     */
     public static double getSnakeValue(int[][] board) {
         double[][] snake =
-                        {{ 1,  128,  256, 32768},
-                        {  2,  64,  512,  16384},
-                        {  4,  32,  1024,  8192},
-                        {  8,  16,  2048,  4096}};
+                {{ 1,  128,  256, 32768},
+                {  2,   64,  512,  16384},
+                {  4,   32,  1024,  8192},
+                {  8,   16,  2048,  4096}};
 
         double score = 0.0;
         for (int row = 0; row < BOARD_SIZE; row++) {

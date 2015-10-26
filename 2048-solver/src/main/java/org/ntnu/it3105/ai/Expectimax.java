@@ -85,8 +85,8 @@ public class Expectimax implements Solver {
                     int freeCells = getFreeCellCount(movedBoard);
                     int dl = depthLimit;
                     if (freeCells < 2) dl = 10;
-                    else if (freeCells < 3) dl = 8;
-                    else if (freeCells < 4) dl = 6;
+                    else if (freeCells < 4) dl = 8;
+                    else if (freeCells < 6) dl = 6;
 
                     result.value = expectimax(movedBoard, dl, false);
                 }
@@ -100,7 +100,7 @@ public class Expectimax implements Solver {
             for (Future<DirectionValueTuple> d : this.es.invokeAll(tasks)) {
                 DirectionValueTuple result = d.get(5, TimeUnit.SECONDS);
 
-                log.info("Direction " + result.dir + " with value " + result.value);
+                log.debug("Direction " + result.dir + " with value " + result.value);
                 if (result.value > bestValue) {
                     bestValue = result.value;
                     bestDirection = result.dir;
@@ -114,7 +114,7 @@ public class Expectimax implements Solver {
             log.error("Execution of expectimax parallel directional search task exceeded timeout threshold!");
         }
 
-        log.info("Moving in direction: " + bestDirection + " with value " + bestValue);
+        log.debug("Moving in direction: " + bestDirection + " with value " + bestValue);
         return bestDirection;
     }
 
@@ -126,21 +126,21 @@ public class Expectimax implements Solver {
 
         if (depth == 0 || victory) {
             /* THIS IS THE GRADIENT VERSION */
-            //double h2 = getGradientValue(board) * 1.2;
-
+            //double h1 = getGradientValue(board) * 1.2;
 
             /* THIS IS THE SNAKE VERSION */
-            //double h1 = highestInCorner(board) * 1.3;
-            double h2 = getSnakeValue(board);
+            double h1 = getSnakeValue(board);
+
+            /* OTHER HEURISTIC */
+            //double h2 = highestInCorner(board) * 1.3;
             //double h3 = Math.log(getFreeCellCount(board));
             //double h4 = Math.log(getNumPossibleMerges(board));
-
 
             //log.info("BottomORVictory (" + depth + "): h2: " + h2 + " h3: " + h3  + " h4: " + h4);
             //log.info("BottomORVictory ("+depth+"): Heuristic: " + h2);
             //return h1 + h2 + h3;
-            //return h1 + h3 + h4;
-            return h2;
+            //return h1 + h2 + h3 + h4;
+            return h1;
         }
 
         if (isMaximizingPlayer) {
@@ -151,13 +151,12 @@ public class Expectimax implements Solver {
                 α := max(α, expectiminimax(child, depth-1))
              */
             alpha = 0.0;
-            //double maxValue = Double.NEGATIVE_INFINITY;
             for (Direction directionToMove : Direction.values()) {
                 int[][] boardCopy = getCopyOfBoard(board); // Get copy of the board sent as argument
                 Object[] values = move(boardCopy, directionToMove);
                 int[][] movedBoard = (int[][]) values[0];
 
-                if (Arrays.deepEquals(movedBoard, boardCopy)) {
+                if (Arrays.deepEquals(movedBoard, board)) {
                     continue;
                 }
 
@@ -173,8 +172,8 @@ public class Expectimax implements Solver {
             foreach child of node
                 α := α + (Probability[child] * expectiminimax(child, depth-1))
              */
-            alpha = Double.MIN_VALUE;
-            double totalProbability = 0.0;
+            alpha = 0.0;
+            double totalChildren = 0;
             for (int row = 0; row < BOARD_SIZE; row++) {
                 for (int col = 0; col < BOARD_SIZE; col++) {
                     if (board[row][col] == 0) {
@@ -183,19 +182,18 @@ public class Expectimax implements Solver {
                         newBoard1[row][col] = 2;
                         double score = expectimax(newBoard1, depth - 1, true);
                         alpha += (0.9 * score);
-                        totalProbability += 0.9;
 
                         // Create copy for 4 tiles
                         int[][] newBoard2 = getCopyOfBoard(board);
                         newBoard2[row][col] = 4;
                         double score1 = expectimax(newBoard2, depth - 1, true);
                         alpha += (0.1 * score1);
-                        totalProbability += 0.1;
+
+                        totalChildren ++;
                     }
                 }
             }
-            //double value = Math.pow((alpha / totalProbability), 0.1);
-            double value = (alpha / totalProbability);
+            double value = alpha / totalChildren;
             //log.info("CHANCE NODE ("+ depth +"): Alpha: " + alpha + " TotalProb: " + totalProbability + " Tot: " + value);
             return value;
         }
