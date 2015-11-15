@@ -30,11 +30,13 @@ public class Expectimax implements Solver {
     private ExecutorService es;
     private Random random;
     private int depthLimit;
+    private int maxDepthLimit;
 
     public Expectimax(Controller controller, int depthLimit) {
         log.info("Starting Expectimax solver with " + Runtime.getRuntime().availableProcessors() + " core threads");
         this.controller = controller;
         this.depthLimit = depthLimit;
+        this.maxDepthLimit = Integer.parseInt(System.getProperty("maxDepth", "10"));
         this.directions = Direction.values();
         this.random = new Random();
         // Let our thread pool consist of one thread per available processor core
@@ -84,9 +86,9 @@ public class Expectimax implements Solver {
                     // Dynamically adjust depth limit based on free cells
                     int freeCells = getFreeCellCount(movedBoard);
                     int dl = depthLimit;
-                    if (freeCells < 2) dl = 10;
-                    else if (freeCells < 4) dl = 8;
-                    else if (freeCells < 6) dl = 6;
+                    if (freeCells < 2) dl = this.maxDepthLimit;
+                    else if (freeCells < 4) dl = this.maxDepthLimit - 2;
+                    else if (freeCells < 6) dl = this.maxDepthLimit - 4;
 
                     result.value = expectimax(movedBoard, dl, false);
                 }
