@@ -131,7 +131,7 @@ public class Expectimax implements Solver {
             direction code.
 
          */
-        if (statisticsScrapping) {
+        if ((statisticsScrapping) && (boardState != null)) {
             GameDataAppender.appendToFile(getFlattenedBoard(boardState) + bestDirection.directionCode + "\n");
         }
 
