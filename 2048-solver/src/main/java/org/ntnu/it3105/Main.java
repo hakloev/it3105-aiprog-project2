@@ -19,7 +19,7 @@ public class Main extends Application {
 
     private static final Logger log = Logger.getLogger(Main.class);
 
-    private int NUMBER_OF_STATISTIC_RUNS = 50;
+    private int NUMBER_OF_STATISTIC_RUNS = Integer.parseInt(System.getProperty("maxRuns", "30"));
 
     private Stage primaryStage;
     private Scene scene;
@@ -30,7 +30,7 @@ public class Main extends Application {
 
     public Main() {
         PropertyConfigurator.configure(getClass().getClassLoader().getResource("config/log4j.properties"));
-        log.info("Starting 2048 Statistics Scrapper");
+        log.info("Starting 2048 Statistics Scrapper with " + NUMBER_OF_STATISTIC_RUNS + " runs");
 
         controller = new Controller();
         controller.initialize();
