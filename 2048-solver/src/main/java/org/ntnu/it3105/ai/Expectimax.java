@@ -263,6 +263,10 @@ public class Expectimax implements Solver {
             }
 
             log.info("Solver ended after " + ((System.currentTimeMillis() - start) / 1000) + " seconds.");
+            // Add split string to statistics file when solver ends
+            if (statisticsScrapping) {
+                GameDataAppender.appendToFile("-\n");
+            }
         });
     }
 
