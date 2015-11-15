@@ -19,7 +19,7 @@ public class Main extends Application {
 
     private static final Logger log = Logger.getLogger(Main.class);
 
-    private int NUMBER_OF_STATISTIC_RUNS = 100;
+    private int NUMBER_OF_STATISTIC_RUNS = 50;
 
     private Stage primaryStage;
     private Scene scene;

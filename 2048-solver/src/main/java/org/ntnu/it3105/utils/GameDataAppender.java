@@ -10,7 +10,7 @@ import java.io.IOException;
  */
 public class GameDataAppender {
 
-    private static File file = new File("game_data.txt");
+    private static File file = new File("./game_data.txt");
 
     public static void appendToFile(String msg) {
         try {
