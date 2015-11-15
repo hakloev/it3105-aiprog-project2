@@ -2,9 +2,9 @@ package org.ntnu.it3105.ai;
 
 import javafx.application.Platform;
 import org.apache.log4j.Logger;
-import org.ntnu.it3105.game.Board;
 import org.ntnu.it3105.game.Controller;
 import org.ntnu.it3105.game.Direction;
+import org.ntnu.it3105.utils.GameDataAppender;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,6 +21,7 @@ import static org.ntnu.it3105.game.Board.*;
  */
 public class Expectimax implements Solver {
 
+    public static boolean STATISTICS_SCRAPPER = true;
     private static long GUI_UPDATE_DELAY = 0L;
 
     private Logger log = Logger.getLogger(Expectimax.class);
@@ -51,6 +52,7 @@ public class Expectimax implements Solver {
 
         double bestValue = 0.0;
         Direction bestDirection = directions[random.nextInt(4)];
+        int[][] boardState = null;
 
         /**
          * The DirectionValueTuple is used as a return value from the async directional search threads
@@ -59,10 +61,12 @@ public class Expectimax implements Solver {
 
             Direction dir;
             Double value;
+            int[][] board;
 
-            public DirectionValueTuple(Direction d, Double v) {
+            public DirectionValueTuple(Direction d, Double v, int[][] board) {
                 this.dir = d;
                 this.value = v;
+                this.board = board;
             }
         }
 
@@ -74,7 +78,7 @@ public class Expectimax implements Solver {
                 Object[] values = move(boardCopy, d); // Both board and new score returned. We only want the board
                 int[][] movedBoard = (int[][]) values[0];
 
-                DirectionValueTuple result = new DirectionValueTuple(d, 0.0);
+                DirectionValueTuple result = new DirectionValueTuple(d, 0.0, controller.getBoard().getCopyOfBoard());
 
                 if (d == Direction.DOWN && rightmostNotFull(movedBoard)) {
                     //log.info("Not full, skip it");
@@ -106,6 +110,7 @@ public class Expectimax implements Solver {
                 if (result.value > bestValue) {
                     bestValue = result.value;
                     bestDirection = result.dir;
+                    boardState = result.board;
                 }
             }
         } catch (InterruptedException e) {
@@ -117,6 +122,21 @@ public class Expectimax implements Solver {
         }
 
         log.debug("Moving in direction: " + bestDirection + " with value " + bestValue);
+        log.debug("Direction code " + bestDirection.directionCode );
+
+        /* Appends the current state, and the move actuated to a file on the following format:
+
+            2,0,2,8,2,8,16,256,2,16,8,64,4,2,8,32,2
+
+            Each pair of four represent a row on the board, from top to bottom. The last
+            digit represent the direction. See Direction for a detailed description of the
+            direction code.
+
+         */
+        if ((STATISTICS_SCRAPPER) && (boardState != null)) {
+            GameDataAppender.appendToFile(getFlattenedBoard(boardState) + bestDirection.directionCode + "\n");
+        }
+
         return bestDirection;
     }
 
@@ -191,7 +211,7 @@ public class Expectimax implements Solver {
                         double score1 = expectimax(newBoard2, depth - 1, true);
                         alpha += (0.1 * score1);
 
-                        totalChildren ++;
+                        totalChildren++;
                     }
                 }
             }
@@ -248,6 +268,38 @@ public class Expectimax implements Solver {
         });
     }
 
+    public void solveForStatistics() {
+        controller.reset();
+        long start = System.currentTimeMillis();
+        log.info("Starting statistics solver ...");
+
+        // We need an atomic value signaling when the FX Application is complete with its UI update
+        AtomicBoolean complete = new AtomicBoolean(true);
+        while (!controller.getBoard().hasWon() && controller.getBoard().canMove()) {
+            // Spin until last GUI update is complete
+            while(!complete.get());
+            // Set that we are now working
+            complete.getAndSet(false);
+
+            if (GUI_UPDATE_DELAY > 0) {
+                // Sleep for the specifi ed GUI update interval
+                try {
+                    Thread.sleep(GUI_UPDATE_DELAY);
+                } catch (InterruptedException e) {
+                    log.error("Interrupted during GUI Update sleep");
+                }
+            }
+
+            Direction directionToMove = getNextMove();
+            controller.doMove(directionToMove);
+            complete.getAndSet(true);
+        }
+
+        log.info("Solver ended after " + ((System.currentTimeMillis() - start) / 1000) + " seconds.");
+        // Add split string to statistics file when solver ends
+        GameDataAppender.appendToFile("-\n");
+    }
+
     /**
      * Shuts down the solver gracefully, by terminating the thread pool executor
      */
@@ -260,5 +312,4 @@ public class Expectimax implements Solver {
             log.error("Interrupted while awaiting ExecutorService shutdown!");
         }
     }
-
 }

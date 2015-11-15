@@ -1,10 +1,11 @@
 package org.ntnu.it3105.game;
+import static org.ntnu.it3105.ai.Expectimax.STATISTICS_SCRAPPER;
 
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import org.apache.log4j.Logger;
+
 
 import java.util.concurrent.*;
 
@@ -32,10 +33,12 @@ public class Controller {
         log.info("GameController initializing");
         board = new Board();
         board.initializeNewGame();
-        drawingboard = new Board(board.getCopyOfBoard());
-        recordManager = Record.getInstance();
         es = Executors.newSingleThreadExecutor();
-        redraw(drawingboard.getBoard());
+        if (!STATISTICS_SCRAPPER) {
+            drawingboard = new Board(board.getCopyOfBoard());
+            recordManager = Record.getInstance();
+            redraw(drawingboard.getBoard());
+        }
     }
 
     /**
@@ -45,8 +48,10 @@ public class Controller {
     public void doMove(Direction directionToMove) {
         if (!board.hasWon() && board.canMove()) {
             board.doMove(directionToMove);
-            recordManager.saveRecord(board.getCurrentScore());
-            redraw(board.getBoard());
+            if (!STATISTICS_SCRAPPER) {
+                recordManager.saveRecord(board.getCurrentScore());
+                redraw(board.getBoard());
+            }
         }
     }
 
@@ -54,7 +59,6 @@ public class Controller {
      * Redraw the entire GridPane with new tiles
      */
     public void redraw(int[][] board) {
-        // log.debug("Redrawing the GUI");
         grid.getChildren().clear();
 
         scoreLabel.setText(String.valueOf(this.board.getCurrentScore()));
@@ -73,8 +77,10 @@ public class Controller {
      */
     public void reset() {
         this.board.initializeNewGame();
-        this.drawingboard = new Board(this.board.getCopyOfBoard());
-        redraw(this.drawingboard.getBoard());
+        if (!STATISTICS_SCRAPPER) {
+            this.drawingboard = new Board(this.board.getCopyOfBoard());
+            redraw(this.drawingboard.getBoard());
+        }
     }
 
     /**

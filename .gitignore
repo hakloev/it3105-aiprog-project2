@@ -4,7 +4,6 @@
 .mtj.tmp/
 
 # Package Files #
-*.jar
 *.war
 *.ear
 
@@ -20,6 +19,7 @@ hs_err_pid*
 *.iml
 
 2048-solver/record.properties
+2048-solver/game_data.txt
 2048-solver/2048.log*
 
 # Maven

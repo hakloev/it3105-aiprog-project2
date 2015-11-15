@@ -11,11 +11,15 @@ import org.ntnu.it3105.ai.Expectimax;
 import org.ntnu.it3105.game.Controller;
 import org.ntnu.it3105.game.Direction;
 
+import static org.ntnu.it3105.ai.Expectimax.STATISTICS_SCRAPPER;
+
 import java.io.IOException;
 
 public class Main extends Application {
 
     private static final Logger log = Logger.getLogger(Main.class);
+
+    private int NUMBER_OF_STATISTIC_RUNS = 50;
 
     private Stage primaryStage;
     private Scene scene;
@@ -23,6 +27,21 @@ public class Main extends Application {
     private Controller controller;
 
     private Expectimax solver;
+
+    public Main() {
+        PropertyConfigurator.configure(getClass().getClassLoader().getResource("config/log4j.properties"));
+        log.info("Starting 2048 Statistics Scrapper");
+
+        controller = new Controller();
+        controller.initialize();
+        solver = new Expectimax(controller, 4);
+        int run = 0;
+        while (run < NUMBER_OF_STATISTIC_RUNS) {
+            run++;
+            solver.solveForStatistics();
+        }
+
+    }
 
     @Override
     public void start(Stage primaryStage) {
@@ -118,6 +137,10 @@ public class Main extends Application {
      * @param args
      */
     public static void main( String[] args ) {
-        launch(args);
+        if (!STATISTICS_SCRAPPER) {
+            launch(args);
+        } else {
+            Main m = new Main();
+        }
     }
 }
