@@ -2,9 +2,9 @@ package org.ntnu.it3105.ai;
 
 import javafx.application.Platform;
 import org.apache.log4j.Logger;
-import org.ntnu.it3105.game.Board;
 import org.ntnu.it3105.game.Controller;
 import org.ntnu.it3105.game.Direction;
+import org.ntnu.it3105.utils.GameDataAppender;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,6 +22,7 @@ import static org.ntnu.it3105.game.Board.*;
 public class Expectimax implements Solver {
 
     private static long GUI_UPDATE_DELAY = 0L;
+    private boolean statisticsScrapping = true;
 
     private Logger log = Logger.getLogger(Expectimax.class);
 
@@ -49,6 +50,7 @@ public class Expectimax implements Solver {
 
         double bestValue = 0.0;
         Direction bestDirection = directions[random.nextInt(4)];
+        int[][] boardState = null;
 
         /**
          * The DirectionValueTuple is used as a return value from the async directional search threads
@@ -57,10 +59,12 @@ public class Expectimax implements Solver {
 
             Direction dir;
             Double value;
+            int[][] board;
 
-            public DirectionValueTuple(Direction d, Double v) {
+            public DirectionValueTuple(Direction d, Double v, int[][] board) {
                 this.dir = d;
                 this.value = v;
+                this.board = board;
             }
         }
 
@@ -72,7 +76,7 @@ public class Expectimax implements Solver {
                 Object[] values = move(boardCopy, d); // Both board and new score returned. We only want the board
                 int[][] movedBoard = (int[][]) values[0];
 
-                DirectionValueTuple result = new DirectionValueTuple(d, 0.0);
+                DirectionValueTuple result = new DirectionValueTuple(d, 0.0, controller.getBoard().getCopyOfBoard());
 
                 if (d == Direction.DOWN && rightmostNotFull(movedBoard)) {
                     //log.info("Not full, skip it");
@@ -104,6 +108,7 @@ public class Expectimax implements Solver {
                 if (result.value > bestValue) {
                     bestValue = result.value;
                     bestDirection = result.dir;
+                    boardState = result.board;
                 }
             }
         } catch (InterruptedException e) {
@@ -115,6 +120,21 @@ public class Expectimax implements Solver {
         }
 
         log.debug("Moving in direction: " + bestDirection + " with value " + bestValue);
+        log.debug("Direction code " + bestDirection.directionCode );
+
+        /* Appends the current state, and the move actuated to a file on the following format:
+
+            2,0,2,8,2,8,16,256,2,16,8,64,4,2,8,32,2
+
+            Each pair of four represent a row on the board, from top to bottom. The last
+            digit represent the direction. See Direction for a detailed description of the
+            direction code.
+
+         */
+        if (statisticsScrapping) {
+            GameDataAppender.appendToFile(getFlattenedBoard(boardState) + bestDirection.directionCode + "\n");
+        }
+
         return bestDirection;
     }
 
@@ -258,5 +278,4 @@ public class Expectimax implements Solver {
             log.error("Interrupted while awaiting ExecutorService shutdown!");
         }
     }
-
 }

@@ -8,16 +8,18 @@ import javafx.scene.input.KeyCode;
  */
 public enum Direction {
 
-    UP(0, -1),
-    DOWN(0, 1),
-    RIGHT(1, 0),
-    LEFT(-1, 0);
+    /* The direction code is on the following a clockwise format */
+    UP(0, -1, 0),
+    RIGHT(1, 0, 1),
+    DOWN(0, 1, 2),
+    LEFT(-1, 0, 3);
 
-    public final int x, y;
+    public final int x, y, directionCode;
 
-    Direction(int x, int y) {
+    Direction(int x, int y, int directionCode) {
         this.x = x;
         this.y = y;
+        this.directionCode = directionCode;
     }
 
     public static Direction directionFor(KeyCode keyCode) throws IllegalArgumentException {

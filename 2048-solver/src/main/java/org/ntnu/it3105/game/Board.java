@@ -385,6 +385,23 @@ public class Board {
     }
 
     /**
+     * Returns a copy of the board as a flattened string
+     * @param board The board to flatten
+     * @return The string representing the board
+     */
+    public static String getFlattenedBoard(int[][] board) {
+        String flattenedBoard = "";
+
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
+                flattenedBoard += board[row][col] + ",";
+            }
+        }
+
+        return flattenedBoard;
+    }
+
+    /**
      * Moves the board paramenter in the parameter direction
      * @param board Board to move
      * @param direction Direction to move in
