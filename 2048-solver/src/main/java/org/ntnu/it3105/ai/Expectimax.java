@@ -21,8 +21,8 @@ import static org.ntnu.it3105.game.Board.*;
  */
 public class Expectimax implements Solver {
 
+    public static boolean STATISTICS_SCRAPPER = true;
     private static long GUI_UPDATE_DELAY = 0L;
-    private boolean statisticsScrapping = true;
 
     private Logger log = Logger.getLogger(Expectimax.class);
 
@@ -131,7 +131,7 @@ public class Expectimax implements Solver {
             direction code.
 
          */
-        if ((statisticsScrapping) && (boardState != null)) {
+        if ((STATISTICS_SCRAPPER) && (boardState != null)) {
             GameDataAppender.appendToFile(getFlattenedBoard(boardState) + bestDirection.directionCode + "\n");
         }
 
@@ -263,11 +263,39 @@ public class Expectimax implements Solver {
             }
 
             log.info("Solver ended after " + ((System.currentTimeMillis() - start) / 1000) + " seconds.");
-            // Add split string to statistics file when solver ends
-            if (statisticsScrapping) {
-                GameDataAppender.appendToFile("-\n");
-            }
         });
+    }
+
+    public void solveForStatistics() {
+        controller.reset();
+        long start = System.currentTimeMillis();
+        log.info("Starting statistics solver ...");
+
+        // We need an atomic value signaling when the FX Application is complete with its UI update
+        AtomicBoolean complete = new AtomicBoolean(true);
+        while (!controller.getBoard().hasWon() && controller.getBoard().canMove()) {
+            // Spin until last GUI update is complete
+            while(!complete.get());
+            // Set that we are now working
+            complete.getAndSet(false);
+
+            if (GUI_UPDATE_DELAY > 0) {
+                // Sleep for the specifi ed GUI update interval
+                try {
+                    Thread.sleep(GUI_UPDATE_DELAY);
+                } catch (InterruptedException e) {
+                    log.error("Interrupted during GUI Update sleep");
+                }
+            }
+
+            Direction directionToMove = getNextMove();
+            controller.doMove(directionToMove);
+            complete.getAndSet(true);
+        }
+
+        log.info("Solver ended after " + ((System.currentTimeMillis() - start) / 1000) + " seconds.");
+        // Add split string to statistics file when solver ends
+        GameDataAppender.appendToFile("-\n");
     }
 
     /**
