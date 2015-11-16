@@ -21,7 +21,7 @@ import static org.ntnu.it3105.game.Board.*;
  */
 public class Expectimax implements Solver {
 
-    public static boolean STATISTICS_SCRAPPER = true;
+    public static boolean GAME_DATA_SCRAPER = Boolean.parseBoolean(System.getProperty("dataScraper", "true"));;
     private static long GUI_UPDATE_DELAY = 0L;
 
     private Logger log = Logger.getLogger(Expectimax.class);
@@ -52,7 +52,6 @@ public class Expectimax implements Solver {
 
         double bestValue = 0.0;
         Direction bestDirection = directions[random.nextInt(4)];
-        int[][] boardState = null;
 
         /**
          * The DirectionValueTuple is used as a return value from the async directional search threads
@@ -61,12 +60,10 @@ public class Expectimax implements Solver {
 
             Direction dir;
             Double value;
-            int[][] board;
 
-            public DirectionValueTuple(Direction d, Double v, int[][] board) {
+            public DirectionValueTuple(Direction d, Double v) {
                 this.dir = d;
                 this.value = v;
-                this.board = board;
             }
         }
 
@@ -78,7 +75,7 @@ public class Expectimax implements Solver {
                 Object[] values = move(boardCopy, d); // Both board and new score returned. We only want the board
                 int[][] movedBoard = (int[][]) values[0];
 
-                DirectionValueTuple result = new DirectionValueTuple(d, 0.0, controller.getBoard().getCopyOfBoard());
+                DirectionValueTuple result = new DirectionValueTuple(d, 0.0);
 
                 if (d == Direction.DOWN && rightmostNotFull(movedBoard)) {
                     //log.info("Not full, skip it");
@@ -110,7 +107,6 @@ public class Expectimax implements Solver {
                 if (result.value > bestValue) {
                     bestValue = result.value;
                     bestDirection = result.dir;
-                    boardState = result.board;
                 }
             }
         } catch (InterruptedException e) {
@@ -133,9 +129,11 @@ public class Expectimax implements Solver {
             direction code.
 
          */
-        if ((STATISTICS_SCRAPPER) && (boardState != null)) {
+        /*
+        if ((GAME_DATA_SCRAPER) && (boardState != null)) {
             GameDataAppender.appendToFile(getFlattenedBoard(boardState) + bestDirection.directionCode + "\n");
         }
+        */
 
         return bestDirection;
     }
