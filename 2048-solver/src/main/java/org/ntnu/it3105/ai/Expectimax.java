@@ -151,7 +151,7 @@ public class Expectimax implements Solver {
             //double h1 = getGradientValue(board) * 1.2;
 
             /* THIS IS THE SNAKE VERSION */
-            double h1 = getSnakeValue(board);
+            double h1 = getGradientValue(board);
 
             /* OTHER HEURISTIC */
             //double h2 = highestInCorner(board) * 1.3;
