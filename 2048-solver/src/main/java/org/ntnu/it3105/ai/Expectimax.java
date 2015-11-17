@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.net.ServerSocket;
 
 import static org.ntnu.it3105.game.Board.*;
 
@@ -298,6 +299,15 @@ public class Expectimax implements Solver {
         log.info("Solver ended after " + ((System.currentTimeMillis() - start) / 1000) + " seconds.");
         // Add split string to statistics file when solver ends
         GameDataAppender.appendToFile("-\n");
+    }
+
+    /**
+     * Talks to the ANN through a socket
+     * @param board Board representation
+     * @return A direction
+     */
+    private Direction getNextMoveANN(int[][] board) {
+
     }
 
     /**
