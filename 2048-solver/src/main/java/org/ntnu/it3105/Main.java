@@ -39,11 +39,7 @@ public class Main extends Application {
             controller = new Controller();
             controller.initialize();
             solver = new Expectimax(controller, 4);
-            int run = 0;
-            while (run < NUMBER_OF_STATISTIC_RUNS) {
-                run++;
-                solver.solveForStatistics();
-            }
+            solver.solveForStatistics();
         }
     }
 

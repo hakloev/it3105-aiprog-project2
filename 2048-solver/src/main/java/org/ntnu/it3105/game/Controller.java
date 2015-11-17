@@ -63,6 +63,7 @@ public class Controller {
             direction code.
 
             */
+
             if (GAME_DATA_SCRAPER && didMove) {
                 GameDataAppender.appendToFile(getFlattenedBoard(boardCopy) + directionToMove.directionCode + "\n");
             }

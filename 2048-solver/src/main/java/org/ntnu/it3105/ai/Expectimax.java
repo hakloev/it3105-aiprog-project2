@@ -6,6 +6,12 @@ import org.ntnu.it3105.game.Controller;
 import org.ntnu.it3105.game.Direction;
 import org.ntnu.it3105.utils.GameDataAppender;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
@@ -38,7 +44,7 @@ public class Expectimax implements Solver {
         log.info("Starting Expectimax solver with " + Runtime.getRuntime().availableProcessors() + " core threads");
         this.controller = controller;
         this.depthLimit = depthLimit;
-        this.maxDepthLimit = Integer.parseInt(System.getProperty("maxDepth", "10"));
+        this.maxDepthLimit = Integer.parseInt(System.getProperty("maxDepth", "8"));
         this.directions = Direction.values();
         this.random = new Random();
         // Let our thread pool consist of one thread per available processor core
@@ -268,44 +274,82 @@ public class Expectimax implements Solver {
     }
 
     public void solveForStatistics() {
-        controller.reset();
-        long start = System.currentTimeMillis();
         log.info("Starting statistics solver ...");
-
-        // We need an atomic value signaling when the FX Application is complete with its UI update
-        AtomicBoolean complete = new AtomicBoolean(true);
-        while (!controller.getBoard().hasWon() && controller.getBoard().canMove()) {
-            // Spin until last GUI update is complete
-            while(!complete.get());
-            // Set that we are now working
-            complete.getAndSet(false);
-
-            if (GUI_UPDATE_DELAY > 0) {
-                // Sleep for the specifi ed GUI update interval
-                try {
-                    Thread.sleep(GUI_UPDATE_DELAY);
-                } catch (InterruptedException e) {
-                    log.error("Interrupted during GUI Update sleep");
-                }
-            }
-
-            Direction directionToMove = getNextMove();
-            controller.doMove(directionToMove);
-            complete.getAndSet(true);
+        log.info("Setting up server socket");
+        ServerSocket ss = null;
+        Socket net;
+        BufferedReader in = null;
+        PrintWriter out = null;
+        try {
+            ss = new ServerSocket(57315);
+            log.info("Serversocket accepting connections on localhost:57315");
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
         }
 
-        log.info("Solver ended after " + ((System.currentTimeMillis() - start) / 1000) + " seconds.");
-        // Add split string to statistics file when solver ends
-        GameDataAppender.appendToFile("-\n");
+        while (true) {
+            try {
+                net = ss.accept();
+                log.info("Connection established: " + net.toString());
+                in = new BufferedReader(new InputStreamReader(net.getInputStream()));
+                out = new PrintWriter(net.getOutputStream());
+                while (true) {
+                    controller.reset();
+                    long start = System.currentTimeMillis();
+                    log.info("Starting new iteration...");
+                    while (!controller.getBoard().hasWon() && controller.getBoard().canMove()) {
+                        Direction directionToMove = getNextMoveANN(controller.getBoard().getBoard(), in, out);
+                        controller.doMove(directionToMove);
+
+                    }
+                    out.println("END");
+                    out.flush();
+                    log.info("Solver ended after " + ((System.currentTimeMillis() - start) / 1000) + " seconds.");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (NullPointerException e1) {
+                log.info("Client disconnected...");
+            } catch (Exception e2) {
+                e2.printStackTrace();
+            }
+        }
     }
 
     /**
      * Talks to the ANN through a socket
-     * @param board Board representation
+     * @param b: Board representation
+     * @param in: A BufferedReader
+     * @param out: A PrintWriter
      * @return A direction
      */
-    private Direction getNextMoveANN(int[][] board) {
+    private Direction getNextMoveANN(int[][] b, BufferedReader in, PrintWriter out) {
+        String board = "";
+        Random r = new Random();
+        for (int y = 0; y < 4; y++) {
+            for (int x = 0; x < 4; x++) {
+                board += b[y][x] + ",";
+            }
+        }
+        board = board.substring(0, board.length() - 1);
+        out.println(board);
+        out.flush();
+        int direction = r.nextInt();
+        try {
+            direction = Integer.parseInt(in.readLine().trim());
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
 
+        GAME_DATA_SCRAPER = false;
+        if (GAME_DATA_SCRAPER) {
+            Direction expectimaxMove = getNextMove();
+            GameDataAppender.appendToFile(getFlattenedBoard(b) + expectimaxMove.directionCode + "\n");
+        }
+
+        return Direction.values()[direction];
     }
 
     /**
