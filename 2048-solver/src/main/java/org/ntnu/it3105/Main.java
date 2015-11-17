@@ -10,12 +10,15 @@ import org.apache.log4j.PropertyConfigurator;
 import org.ntnu.it3105.ai.Expectimax;
 import org.ntnu.it3105.game.Controller;
 import org.ntnu.it3105.game.Direction;
+import org.ntnu.it3105.utils.GameDataAppender;
 
-import static org.ntnu.it3105.ai.Expectimax.STATISTICS_SCRAPPER;
+import static org.ntnu.it3105.ai.Expectimax.GAME_DATA_SCRAPER;
 
 import java.io.IOException;
 
 public class Main extends Application {
+
+    public static boolean USE_GUI = Boolean.parseBoolean(System.getProperty("useGui", "true"));
 
     private static final Logger log = Logger.getLogger(Main.class);
 
@@ -29,18 +32,19 @@ public class Main extends Application {
     private Expectimax solver;
 
     public Main() {
-        PropertyConfigurator.configure(getClass().getClassLoader().getResource("config/log4j.properties"));
-        log.info("Starting 2048 Statistics Scrapper with " + NUMBER_OF_STATISTIC_RUNS + " runs");
+        if (!USE_GUI) {
+            PropertyConfigurator.configure(getClass().getClassLoader().getResource("config/log4j.properties"));
+            log.info("Starting 2048 Statistics Scrapper with " + NUMBER_OF_STATISTIC_RUNS + " runs");
 
-        controller = new Controller();
-        controller.initialize();
-        solver = new Expectimax(controller, 4);
-        int run = 0;
-        while (run < NUMBER_OF_STATISTIC_RUNS) {
-            run++;
-            solver.solveForStatistics();
+            controller = new Controller();
+            controller.initialize();
+            solver = new Expectimax(controller, 4);
+            int run = 0;
+            while (run < NUMBER_OF_STATISTIC_RUNS) {
+                run++;
+                solver.solveForStatistics();
+            }
         }
-
     }
 
     @Override
@@ -73,6 +77,9 @@ public class Main extends Application {
                     log.info("Use AI to do one move");
                     solver.actuateNextMove();
                     break;
+                case E:
+                    log.info("End run, append '-' to data file if scraper run" );
+                    if (GAME_DATA_SCRAPER && USE_GUI) { GameDataAppender.appendToFile("-\n"); };
                 default:
                     try {
                         controller.doMove(Direction.directionFor(keyEvent.getCode()));
@@ -137,10 +144,13 @@ public class Main extends Application {
      * @param args
      */
     public static void main( String[] args ) {
-        if (!STATISTICS_SCRAPPER) {
+        if (USE_GUI) {
             launch(args);
-        } else {
+        } else if (!USE_GUI) {
             Main m = new Main();
+        } else {
+            log.info("This is not a valid startup combination");
         }
+
     }
 }

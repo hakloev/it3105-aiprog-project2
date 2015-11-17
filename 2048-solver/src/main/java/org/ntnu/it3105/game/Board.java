@@ -55,9 +55,9 @@ public class Board {
      * Moves all tiles and promotes (to the power of 2) them if they are merged
      * @param direction The direction to move in
      */
-    public void doMove(Direction direction) {
+    public boolean doMove(Direction direction) {
         // log.debug("Moving in direction: " + direction);
-
+        boolean didMove = false;
         Object[] values = move(this.getCopyOfBoard(), direction); // move returns both the board and score respectively
 
         int[][] movedBoard = (int[][]) values[0];
@@ -67,12 +67,14 @@ public class Board {
             this.tiles = movedBoard;
             addTile();
             currentScore += (int) values[1];
+            didMove =  true;
         } else {
             // log.debug("Board state did not change, did not append tile");
         }
 
         this.canMove = isPossibleToMove();
         // log.debug("Movement is possible: " + this.canMove);
+        return didMove;
     }
 
     /**

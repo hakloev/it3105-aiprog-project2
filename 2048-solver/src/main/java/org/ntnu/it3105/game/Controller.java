@@ -1,10 +1,13 @@
 package org.ntnu.it3105.game;
-import static org.ntnu.it3105.ai.Expectimax.STATISTICS_SCRAPPER;
+import static org.ntnu.it3105.ai.Expectimax.GAME_DATA_SCRAPER;
+import static org.ntnu.it3105.Main.USE_GUI;
+import static org.ntnu.it3105.game.Board.getFlattenedBoard;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import org.apache.log4j.Logger;
+import org.ntnu.it3105.utils.GameDataAppender;
 
 
 import java.util.concurrent.*;
@@ -34,9 +37,10 @@ public class Controller {
         board = new Board();
         board.initializeNewGame();
         es = Executors.newSingleThreadExecutor();
-        if (!STATISTICS_SCRAPPER) {
-            drawingboard = new Board(board.getCopyOfBoard());
+
+        if (USE_GUI) {
             recordManager = Record.getInstance();
+            drawingboard = new Board(board.getCopyOfBoard());
             redraw(drawingboard.getBoard());
         }
     }
@@ -47,8 +51,23 @@ public class Controller {
      */
     public void doMove(Direction directionToMove) {
         if (!board.hasWon() && board.canMove()) {
-            board.doMove(directionToMove);
-            if (!STATISTICS_SCRAPPER) {
+            int[][] boardCopy = board.getCopyOfBoard();
+            boolean didMove = board.doMove(directionToMove);
+
+             /* Appends the current state, and the move actuated to a file on the following format:
+
+            2,0,2,8,2,8,16,256,2,16,8,64,4,2,8,32,2
+
+            Each pair of four represent a row on the board, from top to bottom. The last
+            digit represent the direction. See Direction for a detailed description of the
+            direction code.
+
+            */
+            if (GAME_DATA_SCRAPER && didMove) {
+                GameDataAppender.appendToFile(getFlattenedBoard(boardCopy) + directionToMove.directionCode + "\n");
+            }
+
+            if (USE_GUI && didMove) {
                 recordManager.saveRecord(board.getCurrentScore());
                 redraw(board.getBoard());
             }
@@ -77,7 +96,7 @@ public class Controller {
      */
     public void reset() {
         this.board.initializeNewGame();
-        if (!STATISTICS_SCRAPPER) {
+        if (USE_GUI) {
             this.drawingboard = new Board(this.board.getCopyOfBoard());
             redraw(this.drawingboard.getBoard());
         }
