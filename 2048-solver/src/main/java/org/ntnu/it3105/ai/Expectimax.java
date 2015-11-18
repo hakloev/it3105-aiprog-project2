@@ -6,10 +6,7 @@ import org.ntnu.it3105.game.Controller;
 import org.ntnu.it3105.game.Direction;
 import org.ntnu.it3105.utils.GameDataAppender;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -293,7 +290,9 @@ public class Expectimax implements Solver {
                 net = ss.accept();
                 log.info("Connection established: " + net.toString());
                 in = new BufferedReader(new InputStreamReader(net.getInputStream()));
-                out = new PrintWriter(net.getOutputStream());
+                out = new PrintWriter(
+                        new BufferedWriter(new OutputStreamWriter(
+                                net.getOutputStream(), "UTF-8")), true);
                 while (true) {
                     controller.reset();
                     long start = System.currentTimeMillis();

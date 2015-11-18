@@ -18,7 +18,7 @@ import java.io.IOException;
 
 public class Main extends Application {
 
-    public static boolean USE_GUI = Boolean.parseBoolean(System.getProperty("useGui", "true"));
+    public static boolean USE_GUI = Boolean.parseBoolean(System.getProperty("useGui", "false"));
 
     private static final Logger log = Logger.getLogger(Main.class);
 
