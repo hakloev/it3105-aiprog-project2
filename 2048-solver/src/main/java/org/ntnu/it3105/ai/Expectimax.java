@@ -25,8 +25,9 @@ import static org.ntnu.it3105.game.Board.*;
  */
 public class Expectimax implements Solver {
 
-    public static boolean GAME_DATA_SCRAPER = Boolean.parseBoolean(System.getProperty("dataScraper", "true"));;
+    public static boolean GAME_DATA_SCRAPER = Boolean.parseBoolean(System.getProperty("dataScraper", "true"));
     private static long GUI_UPDATE_DELAY = 0L;
+    public static int NUMBER_OF_STATISTICS_RUNS = Integer.parseInt(System.getProperty("maxRuns", "200"));
 
     private Logger log = Logger.getLogger(Expectimax.class);
 
@@ -36,6 +37,13 @@ public class Expectimax implements Solver {
     private Random random;
     private int depthLimit;
     private int maxDepthLimit;
+
+    private boolean SNAKE = false;
+    private boolean GRADIENT = false;
+    private boolean HIGH_CORNER = true;
+    private boolean FREE_CELLS = true;
+    private boolean POSSIBLE_MERGES = false;
+
 
     public Expectimax(Controller controller, int depthLimit) {
         log.info("Starting Expectimax solver with " + Runtime.getRuntime().availableProcessors() + " core threads");
@@ -149,11 +157,19 @@ public class Expectimax implements Solver {
         boolean victory = isVictory(board);
 
         if (depth == 0 || victory) {
+            double heuristic = 0.0;
+
+            if (SNAKE) heuristic += getSnakeValue(board);
+            if (GRADIENT) heuristic += getGradientValue(board) * 1.2;
+            if (HIGH_CORNER) heuristic += highestInCorner(board) * 1.3;
+            if (FREE_CELLS) heuristic += Math.log(getFreeCellCount(board));
+            if (POSSIBLE_MERGES) heuristic += Math.log(getNumPossibleMerges(board));
+
             /* THIS IS THE GRADIENT VERSION */
             //double h1 = getGradientValue(board) * 1.2;
 
             /* THIS IS THE SNAKE VERSION */
-            double h1 = getGradientValue(board);
+            //double h1 = getGradientValue(board);
 
             /* OTHER HEURISTIC */
             //double h2 = highestInCorner(board) * 1.3;
@@ -161,10 +177,12 @@ public class Expectimax implements Solver {
             //double h4 = Math.log(getNumPossibleMerges(board));
 
             //log.info("BottomORVictory (" + depth + "): h2: " + h2 + " h3: " + h3  + " h4: " + h4);
-            //log.info("BottomORVictory ("+depth+"): Heuristic: " + h2);
+            //log.info("BottomORVictory ("+depth+"): Heuristic: " + h2 + " " + h3);
             //return h1 + h2 + h3;
             //return h1 + h2 + h3 + h4;
-            return h1;
+            //return h2 + h3;
+            //return h1;
+            return heuristic;
         }
 
         if (isMaximizingPlayer) {
@@ -271,6 +289,23 @@ public class Expectimax implements Solver {
     }
 
     public void solveForStatistics() {
+        log.info("Starting statistics solver for "+NUMBER_OF_STATISTICS_RUNS+" runs...");
+        int i = 0;
+        while (i < NUMBER_OF_STATISTICS_RUNS) {
+            i++;
+            controller.reset();
+            long start = System.currentTimeMillis();
+            log.info("Starting new iteration...");
+            while (!controller.getBoard().hasWon() && controller.getBoard().canMove()) {
+                Direction directionToMove = getNextMove();
+                controller.doMove(directionToMove);
+            }
+            log.info("Solver ended after " + ((System.currentTimeMillis() - start) / 1000) + " seconds.");
+            GameDataAppender.appendToFile("-\n");
+        }
+    }
+
+    public void solveForStatisticsUsingSocket() {
         log.info("Starting statistics solver ...");
         log.info("Setting up server socket");
         ServerSocket ss = null;
@@ -363,4 +398,5 @@ public class Expectimax implements Solver {
             log.error("Interrupted while awaiting ExecutorService shutdown!");
         }
     }
+
 }
