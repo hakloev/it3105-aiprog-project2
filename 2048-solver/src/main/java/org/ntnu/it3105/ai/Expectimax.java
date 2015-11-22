@@ -323,19 +323,19 @@ public class Expectimax implements Solver {
         while (true) {
             try {
                 net = ss.accept();
-                log.info("Connection established: " + net.toString());
                 in = new BufferedReader(new InputStreamReader(net.getInputStream()));
-                out = new PrintWriter(
-                        new BufferedWriter(new OutputStreamWriter(
-                                net.getOutputStream(), "UTF-8")), true);
+                out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(net.getOutputStream(), "UTF-8")), true);
+
+                log.info("Connection established: " + net.toString());
                 while (true) {
                     controller.reset();
                     long start = System.currentTimeMillis();
                     log.info("Starting new iteration...");
+
+                    // We need an atomic value signaling when the FX Application is complete with its UI update
                     while (!controller.getBoard().hasWon() && controller.getBoard().canMove()) {
                         Direction directionToMove = getNextMoveANN(controller.getBoard().getBoard(), in, out);
                         controller.doMove(directionToMove);
-
                     }
                     out.println("END");
                     out.flush();

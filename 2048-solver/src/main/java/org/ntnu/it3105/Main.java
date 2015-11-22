@@ -19,7 +19,7 @@ import java.io.IOException;
 public class Main extends Application {
 
     public static boolean USE_GUI = Boolean.parseBoolean(System.getProperty("useGui", "false"));
-    public static boolean USE_SOCKET = Boolean.parseBoolean(System.getProperty("useSocket", "false"));
+    public static boolean USE_SOCKET = Boolean.parseBoolean(System.getProperty("useSocket", "true"));
 
     private static final Logger log = Logger.getLogger(Main.class);
 
@@ -40,6 +40,7 @@ public class Main extends Application {
             controller = new Controller();
             controller.initialize();
             solver = new Expectimax(controller, 4);
+
             if (USE_SOCKET) {
                 solver.solveForStatisticsUsingSocket();
             } else {
@@ -79,8 +80,11 @@ public class Main extends Application {
                     solver.actuateNextMove();
                     break;
                 case E:
-                    log.info("End run, append '-' to data file if scraper run" );
-                    if (GAME_DATA_SCRAPER && USE_GUI) { GameDataAppender.appendToFile("-\n"); };
+                    if (USE_SOCKET) {
+                        solver.solveForStatisticsUsingSocket();
+                    } else {
+                        solver.solveForStatistics();
+                    }
                 default:
                     try {
                         controller.doMove(Direction.directionFor(keyEvent.getCode()));

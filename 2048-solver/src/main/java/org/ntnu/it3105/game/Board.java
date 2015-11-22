@@ -332,7 +332,7 @@ public class Board {
     public static double getGradientValue(int[][] board) {
         double[][] topright =
                         {{ 8, 16, 32,128},
-                        {  4,  8, 16, 64},
+                        {  4,  8, 24, 64},
                         {  2,  4, 16, 32},
                         {  1,  2,  8, 16}};
 
